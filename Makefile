@@ -7,7 +7,7 @@ help:
 
 ##	deps: Check for mod file and if missing, download the golang dep package
 deps:
-		@if [ "$(go mod help | echo 'no-mod')" = "no-mod"]; then \
+		@if [ "$(go mod help | echo 'no-mod')" = "no-mod" ]; then \
 				echo "[dep] fetching package dependencies"; \
 				go get -u github.com/golang/dep/cmd/dep; \
 				dep ensure; \
@@ -22,16 +22,19 @@ test:
 lint: lint-check-deps
 		@echo "[golangci-lint] linting sources"
 		@golangci-lint run \
+				--exclude-use-default=false \
+				--disable-all \
+				-v \
+				-E govet \
+				-E gofmt \
 				-E misspell \
 				-E golint \
-				-E gofmt \
 				-E unconvert \
-				--exclude-use-default=false \
-				./..
+				./...
 
 ##	lint-check-deps: Check for existance of the linting packages such as [golangci-lint]
 lint-check-deps:
-		@if [ -z `which golangci-lint`]; then \
+		@if [ -z `which golangci-lint` ]; then \
 				@echo "[go get] installing golangci-lint";\
 				go get -u github.com/golangci/golangci-lint/cmd/golangci-lint; \
 		fi
