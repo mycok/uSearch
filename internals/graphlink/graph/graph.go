@@ -8,7 +8,7 @@ import (
 
 // Graph is implemented by objects that mutate or query a link graph.
 type Graph interface {
-	// UpsertLink creates a new or updates an existing link 
+	// UpsertLink creates a new or updates an existing link
 	UpsertLink(link *Link) error
 
 	// FindLink performs a lookup by id
@@ -77,13 +77,12 @@ type EdgeIterator interface {
 // Iterator is embedded & / or implemented by objects that require iteration functionality
 type Iterator interface {
 	// Next advances the iterator. If no more items are available or an
-    // error occurs, calls to Next() return false.
+	// error occurs, calls to Next() return false.
 	Next() bool
 
 	// Error returns the last error encountered by the iterator
 	Error() error
 
 	// Close releases any resources linked to the iterator
-	Close()
+	Close() error
 }
-
