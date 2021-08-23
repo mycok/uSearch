@@ -5,7 +5,9 @@ of the Graph, LinkIterator, EdgeIterator and Iterator interface.
 package memory
 
 import (
+	"fmt"
 	"sync"
+
 	// "time"
 
 	"github.com/mycok/uSearch/internal/graphlink/graph"
@@ -73,5 +75,21 @@ func (s *InMemoryGraph) UpsertLink(link *graph.Link) error {
 	s.linkURLIndex[lcopy.URL] = lcopy
 
 	return nil
+}
 
+// FindLink performs a Link lookup by ID and returns an error if no
+// match is found
+func (s *InMemoryGraph) FindLink(id uuid.UUID) (*graph.Link, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	link := s.links[id]
+	if link == nil {
+		return nil, fmt.Errorf("find link: %w", graph.ErrNotFound)
+	}
+
+	lcopy := new(graph.Link)
+	*lcopy = *link
+
+	return lcopy, nil
 }
