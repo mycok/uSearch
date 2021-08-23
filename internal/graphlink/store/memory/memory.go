@@ -77,7 +77,7 @@ func (s *InMemoryGraph) UpsertLink(link *graph.Link) error {
 }
 
 // FindLink performs a Link lookup by ID and returns an error if no
-// match is found
+// match is found.
 func (s *InMemoryGraph) FindLink(id uuid.UUID) (*graph.Link, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -99,13 +99,59 @@ func (s *InMemoryGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Time)
 	from, to := fromID.String(), toID.String()
 
 	s.mu.RLock()
+
 	var list []*graph.Link
 	for linkID, link := range s.links {
 		if id := linkID.String(); id >= from && id < to && link.RetrievedAt.Before(retrievedBefore) {
 			list = append(list, link)
 		}
 	}
+
 	s.mu.RUnlock()
 
 	return &LinkIterator{s: s, links: list}, nil
+}
+
+// UpsertEdge creates a new edge or updates an existing edge.
+func (s *InMemoryGraph) UpsertEdge(edge *graph.Edge) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	_, srcExists := s.links[edge.Src]
+	_, destExists := s.links[edge.Dest]
+
+	if !srcExists || !destExists {
+		return fmt.Errorf("upsert edge: %w", graph.ErrUnknownEdgeLinks)
+	}
+
+	// Loop through the edgelist that matches the provided edge.src to check whether
+	// the provided edge already exists.
+	for _, edgeID := range s.linkEdgeMap[edge.Src] {
+		existingEdge := s.edges[edgeID]
+		if existingEdge.Src == edge.Src && existingEdge.Dest == edge.Dest {
+			existingEdge.UpdatedAt = time.Now()
+			*edge = *existingEdge
+
+			return nil
+		}
+	}
+
+	// Attach an ID and upsert the new edge
+	for {
+		edge.ID = uuid.New()
+		if s.edges[edge.ID] == nil {
+			break
+		}
+	}
+
+	edge.UpdatedAt = time.Now()
+	eCopy := new(graph.Edge)
+	*eCopy = *edge
+	s.edges[eCopy.ID] = eCopy
+
+	// Append the edge ID to the list of edges originating from the
+	// edge's source link.
+	s.linkEdgeMap[edge.Src] = append(s.linkEdgeMap[edge.Src], eCopy.ID)
+
+	return nil
 }
