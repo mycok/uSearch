@@ -23,7 +23,6 @@ lint: lint-check-deps
 		@echo "[golangci-lint] linting sources"
 		@golangci-lint run \
 				--exclude-use-default=false \
-				--disable-all \
 				-v \
 				-E govet \
 				-E gofmt \
@@ -44,11 +43,11 @@ lint-check-deps:
 ##	new-cdb-migrations: Create new migration files with the specified name passed as a commandline env var [name]
 new-cdb-migrations: migrate-check-deps check-cdb-env
 		@echo '.....Creating migration files for ${name}.....'
-		migrate create -seq -ext .sql -dir=./internals/graphlink/store/cdb/migations ${name}
+		migrate create -seq -ext .sql -dir=./internal/graphlink/store/cdb/migations ${name}
 
 ##	run-cdb-migations: Run all [up] migrations
 run-cdb-migations: migrate-check-deps check-cdb-env
-		migrate -source ./internals/graphlink/store/cdb/migrations -databse '$(subst postgresql,cockroach,${CDB_DSN})' up
+		migrate -source ./internal/graphlink/store/cdb/migrations -databse '$(subst postgresql,cockroach,${CDB_DSN})' up
 
 ##	migrate-check-deps: Check for the existance of the migrate tool with support for cockroach db
 migrate-check-deps:
