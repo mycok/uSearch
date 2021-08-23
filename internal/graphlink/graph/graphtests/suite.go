@@ -1,3 +1,8 @@
+/*
+Package graphtests contains re-usable test suites that can be,
+imported and run against any object that implements the Graph
+interface.
+*/
 package graphtests
 
 import (
@@ -8,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mycok/uSearch/internals/graphlink/graph"
+	"github.com/mycok/uSearch/internal/graphlink/graph"
 
 	"github.com/google/uuid"
 	check "gopkg.in/check.v1"
@@ -123,12 +128,12 @@ func (s *BaseSuite) TestConcurrentLinkIterators(c *check.C) {
 		go func(id int) {
 			defer wg.Done()
 
-			itTacheckomment := check.Commentf("iterator %d", id)
+			cc := check.Commentf("iterator %d", id)
 			seen := make(map[string]bool)
 			it, err := s.partitionedLinkIterator(c, 0, 1, time.Now())
-			c.Assert(err, check.IsNil, itTacheckomment)
+			c.Assert(err, check.IsNil, cc)
 			defer func() {
-				c.Assert(it.Close(), check.IsNil, itTacheckomment)
+				c.Assert(it.Close(), check.IsNil, cc)
 			}()
 
 			for i := 0; it.Next(); i++ {
@@ -138,9 +143,9 @@ func (s *BaseSuite) TestConcurrentLinkIterators(c *check.C) {
 				seen[linkID] = true
 			}
 
-			c.Assert(seen, check.HasLen, numLinks, itTacheckomment)
-			c.Assert(it.Error(), check.IsNil, itTacheckomment)
-			c.Assert(it.Close(), check.IsNil, itTacheckomment)
+			c.Assert(seen, check.HasLen, numLinks, cc)
+			c.Assert(it.Error(), check.IsNil, cc)
+			c.Assert(it.Close(), check.IsNil, cc)
 		}(i)
 	}
 
@@ -297,12 +302,12 @@ func (s *BaseSuite) TestConcurrentEdgeIterators(c *check.C) {
 		go func(id int) {
 			defer wg.Done()
 
-			itTacheckomment := check.Commentf("iterator %d", id)
+			cc := check.Commentf("iterator %d", id)
 			seen := make(map[string]bool)
 			it, err := s.partitionedEdgeIterator(c, 0, 1, time.Now())
-			c.Assert(err, check.IsNil, itTacheckomment)
+			c.Assert(err, check.IsNil, cc)
 			defer func() {
-				c.Assert(it.Close(), check.IsNil, itTacheckomment)
+				c.Assert(it.Close(), check.IsNil, cc)
 			}()
 
 			for i := 0; it.Next(); i++ {
@@ -312,9 +317,9 @@ func (s *BaseSuite) TestConcurrentEdgeIterators(c *check.C) {
 				seen[edgeID] = true
 			}
 
-			c.Assert(seen, check.HasLen, numEdges, itTacheckomment)
-			c.Assert(it.Error(), check.IsNil, itTacheckomment)
-			c.Assert(it.Close(), check.IsNil, itTacheckomment)
+			c.Assert(seen, check.HasLen, numEdges, cc)
+			c.Assert(it.Error(), check.IsNil, cc)
+			c.Assert(it.Close(), check.IsNil, cc)
 		}(i)
 	}
 
