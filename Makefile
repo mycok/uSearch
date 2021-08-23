@@ -24,10 +24,10 @@ lint: lint-check-deps
 		@golangci-lint run \
 				--exclude-use-default=false \
 				-v \
-				-E govet \
 				-E gofmt \
-				-E misspell \
 				-E golint \
+				-E govet \
+				-E misspell \
 				-E unconvert \
 				./...
 
