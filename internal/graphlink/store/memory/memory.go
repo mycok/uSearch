@@ -155,3 +155,28 @@ func (s *InMemoryGraph) UpsertEdge(edge *graph.Edge) error {
 
 	return nil
 }
+
+// Edges returns an iterator for the set of edges whose source IDs belong to the
+// [fromID, toID) range and were updated before the provided timestamp.
+func (s *InMemoryGraph) Edges(fromID, toID uuid.UUID, updatedBefore time.Time) (graph.EdgeIterator, error) {
+	from, to := fromID.String(), toID.String()
+
+	s.mu.RLock()
+
+	var list []*graph.Edge
+	for linkID := range s.links {
+		if id := linkID.String(); id < from || id >= to {
+			continue
+		}
+
+		for _, edgeID := range s.linkEdgeMap[linkID] {
+			if edge := s.edges[edgeID]; edge.UpdatedAt.Before(updatedBefore) {
+				list = append(list, edge)
+			}
+		}
+	}
+
+	s.mu.RUnlock()
+
+	return &EdgeIterator{s: s, edges: list}, nil
+}
