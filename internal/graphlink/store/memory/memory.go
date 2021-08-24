@@ -40,8 +40,9 @@ func NewInMemoryGraph() *InMemoryGraph {
 	}
 }
 
-// UpsertLink creates a new link or updates an existing link.
+// UpsertLink creates a new or updates an existing link.
 func (s *InMemoryGraph) UpsertLink(link *graph.Link) error {
+	// Acquire a write lock to avoid data races while mutating graph data.
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -59,7 +60,7 @@ func (s *InMemoryGraph) UpsertLink(link *graph.Link) error {
 		return nil
 	}
 
-	// Assign new ID and insert link
+	// Assign new ID and insert link.
 	for {
 		link.ID = uuid.New()
 		if s.links[link.ID] == nil {
@@ -79,6 +80,7 @@ func (s *InMemoryGraph) UpsertLink(link *graph.Link) error {
 // FindLink performs a Link lookup by ID and returns an error if no
 // match is found.
 func (s *InMemoryGraph) FindLink(id uuid.UUID) (*graph.Link, error) {
+	// Acquire a read lock to avoid data races while reading graph data.
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -93,11 +95,12 @@ func (s *InMemoryGraph) FindLink(id uuid.UUID) (*graph.Link, error) {
 	return lcopy, nil
 }
 
-// Links returns an iterator for the set of links whose IDs belong to the
-// [fromID, toID) range and were retrieved before the provided timestamp.
+// Links returns an alterator for a set of links whose id's belong
+// to the [fromID, toID] range and were retrieved before the [retrievedBefore] time.
 func (s *InMemoryGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Time) (graph.LinkIterator, error) {
 	from, to := fromID.String(), toID.String()
 
+	// Acquire a read lock to avoid data races while reading graph data.
 	s.mu.RLock()
 
 	var list []*graph.Link
@@ -107,13 +110,15 @@ func (s *InMemoryGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Time)
 		}
 	}
 
+	// Release the read lock after the read operations.
 	s.mu.RUnlock()
 
 	return &LinkIterator{s: s, links: list}, nil
 }
 
-// UpsertEdge creates a new edge or updates an existing edge.
+// UpsertEdge creates a new or updates an existing edge.
 func (s *InMemoryGraph) UpsertEdge(edge *graph.Edge) error {
+	// Acquire a write lock to avoid data races while mutating graph data.
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -136,7 +141,7 @@ func (s *InMemoryGraph) UpsertEdge(edge *graph.Edge) error {
 		}
 	}
 
-	// Attach an ID and upsert the new edge
+	// Attach an ID and upsert the new edge.
 	for {
 		edge.ID = uuid.New()
 		if s.edges[edge.ID] == nil {
@@ -156,11 +161,12 @@ func (s *InMemoryGraph) UpsertEdge(edge *graph.Edge) error {
 	return nil
 }
 
-// Edges returns an iterator for the set of edges whose source IDs belong to the
-// [fromID, toID) range and were updated before the provided timestamp.
+// Edges returns an iterator for a set of edges whose source vertex id's
+// belong to the [fromID, toID] range and were updated before the [updatedBefore] time.
 func (s *InMemoryGraph) Edges(fromID, toID uuid.UUID, updatedBefore time.Time) (graph.EdgeIterator, error) {
 	from, to := fromID.String(), toID.String()
 
+	// Acquire a read lock to avoid data races while reading graph data.
 	s.mu.RLock()
 
 	var list []*graph.Edge
@@ -176,7 +182,31 @@ func (s *InMemoryGraph) Edges(fromID, toID uuid.UUID, updatedBefore time.Time) (
 		}
 	}
 
+	// Release the read lock after the read operations.
 	s.mu.RUnlock()
 
 	return &EdgeIterator{s: s, edges: list}, nil
+}
+
+func (s *InMemoryGraph) RemoveStaleEdges(fromID uuid.UUID, updatedBefore time.Time) error {
+	// Acquire a write lock to avoid data races while mutating graph data.
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	var newEdgeList edgeList
+	for _, edgeID := range s.linkEdgeMap[fromID] {
+		edge := s.edges[edgeID]
+		if edge.UpdatedAt.Before(updatedBefore) {
+			delete(s.edges, edgeID)
+
+			continue
+		}
+
+		newEdgeList = append(newEdgeList, edgeID)
+	}
+
+	// Replace edge list or origin link with the filtered edge list.
+	s.linkEdgeMap[fromID] = newEdgeList
+
+	return nil
 }
