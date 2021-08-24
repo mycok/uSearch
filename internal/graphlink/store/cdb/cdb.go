@@ -2,6 +2,9 @@ package cdb
 
 import (
 	"database/sql"
+	"fmt"
+
+	"github.com/mycok/uSearch/internal/graphlink/graph"
 )
 
 var (
@@ -61,4 +64,16 @@ func NewCockroachDbGraph(dsn string) (*CockroachDBGraph, error) {
 // Close terminates the connection to the cockroachdb instance.
 func (c *CockroachDBGraph) Close() error {
 	return c.db.Close()
+}
+
+// UpsertLink creates a new or updates an existing link.
+func (c *CockroachDBGraph) UpsertLink(link *graph.Link) error {
+	row := c.db.QueryRow(upsertLinkQuery, link.URL, link.RetrievedAt.UTC())
+	if err := row.Scan(&link.ID, &link.RetrievedAt); err != nil {
+		return fmt.Errorf("upsert link: %w", err)
+	}
+
+	link.RetrievedAt = link.RetrievedAt.UTC()
+
+	return nil
 }
