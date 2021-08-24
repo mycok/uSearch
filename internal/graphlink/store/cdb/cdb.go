@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/mycok/uSearch/internal/graphlink/graph"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -14,7 +16,7 @@ var (
 					ON CONFLICT (url) DO UPDATE SET retrieved_at=GREATEST(links.retrieved_at, $2)
 					RETURNING id, retrieved_at
 					`
-	
+
 	findLinkQuery = "SELECT id, url, retrieved_at FROM links WHERE id=$1"
 
 	linksInPartitionsQuery = `
@@ -23,7 +25,7 @@ var (
 							AND id < $2
 							AND retrieved_at < $3
 							`
-	
+
 	upsertEdgeQuery = `
 					INSERT INTO edges (src, dest, updated_at)
 					VALUES ($1, $2, NOW())
@@ -37,8 +39,8 @@ var (
 							AND src < $2
 							AND updated_at < $3
 							`
-	
-	removeStaleEdgesQuery = "DELETE FROM edges WHERE src=$1 AND updated_at < $2"			
+
+	removeStaleEdgesQuery = "DELETE FROM edges WHERE src=$1 AND updated_at < $2"
 )
 
 // Compile-time check for ensuring CockroachDbGraph implements Graph.
@@ -68,12 +70,29 @@ func (c *CockroachDBGraph) Close() error {
 
 // UpsertLink creates a new or updates an existing link.
 func (c *CockroachDBGraph) UpsertLink(link *graph.Link) error {
-	row := c.db.QueryRow(upsertLinkQuery, link.URL, link.RetrievedAt.UTC())
-	if err := row.Scan(&link.ID, &link.RetrievedAt); err != nil {
+	err := c.db.QueryRow(upsertLinkQuery, link.URL, link.RetrievedAt.UTC()).Scan(&link.ID, &link.RetrievedAt)
+	if err != nil {
 		return fmt.Errorf("upsert link: %w", err)
 	}
 
 	link.RetrievedAt = link.RetrievedAt.UTC()
 
 	return nil
+}
+
+// FindLink performs a Link lookup by ID and returns an error if no
+// match is found.
+func (c *CockroachDBGraph) FindLink(id uuid.UUID) (*graph.Link, error) {
+	link := &graph.Link{ID: id}
+
+	err := c.db.QueryRow(findLinkQuery, id).Scan(&link.URL, &link.RetrievedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("find link: %w", graph.ErrNotFound)
+		}
+
+		return nil, fmt.Errorf("find link: %w", err)
+	}
+
+	return link, nil
 }
