@@ -38,16 +38,16 @@ lint-check-deps:
 				go get -u github.com/golangci/golangci-lint/cmd/golangci-lint; \
 		fi
 
-.PHONY: create-cdb-migrations run-cdb-migrations migrate-check-deps check-cdb-env
+.PHONY: create-cdb-migrations run-cdb-up-migrations migrate-check-deps check-cdb-env
 
 ##	new-cdb-migrations: Create new migration files with the specified name passed as a commandline env var [name]
 new-cdb-migrations: migrate-check-deps check-cdb-env
 		@echo '.....Creating migration files for ${name}.....'
-		migrate create -seq -ext .sql -dir=./internal/graphlink/store/cdb/migations ${name}
+		migrate create -seq -ext .sql -dir=./internal/graphlink/store/cdb/migrations ${name}
 
 ##	run-cdb-migations: Run all [up] migrations
-run-cdb-migations: migrate-check-deps check-cdb-env
-		migrate -source ./internal/graphlink/store/cdb/migrations -databse '$(subst postgresql,cockroach,${CDB_DSN})' up
+run-cdb-up-migations: migrate-check-deps check-cdb-env
+		migrate -path ./internal/graphlink/store/cdb/migrations -database '$(subst postgresql,cockroach,${CDB_DSN})' up
 
 ##	migrate-check-deps: Check for the existance of the migrate tool with support for cockroach db
 migrate-check-deps:
@@ -65,7 +65,7 @@ db instance.For example, if you are running a local cockroachdb (with --insecure
 have created a database called 'linkgraph' you can define the envvar by 
 running:
 	
-export CDB_DSN='postgresql://root@localhost:26257/linkgraph?sslmode=disable'
+export CDB_DSN='postgresql://root@localhost:26257/graphlink?sslmode=disable'
 
 endef
 
