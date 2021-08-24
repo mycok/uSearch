@@ -8,25 +8,26 @@ import (
 
 // Graph is implemented by objects that mutate or query a link graph.
 type Graph interface {
-	// UpsertLink creates a new or updates an existing link
+	// UpsertLink creates a new or updates an existing link.
 	UpsertLink(link *Link) error
 
-	// FindLink performs a lookup by id
+	// FindLink performs a Link lookup by ID and returns an error if no
+	// match is found.
 	FindLink(id uuid.UUID) (*Link, error)
 
 	// Links returns an alterator for a set of links whose id's belong
-	// to the (fromID, toID) range and were retrieved before the (retrievedBefore) time
+	// to the [fromID, toID] range and were retrieved before the [retrievedBefore] time.
 	Links(fromID, toID uuid.UUID, retrievedBefore time.Time) (LinkIterator, error)
 
-	// UpsertEdge creates a new or updates an existing edge
+	// UpsertEdge creates a new or updates an existing edge.
 	UpsertEdge(edge *Edge) error
 
 	// RemoveStaleEdges removes any edge that originates from a specific link ID
-	// and was updated before the specified (updatedBefore) time
+	// and was updated before the specified [updatedBefore] time.
 	RemoveStaleEdges(fromID uuid.UUID, updatedBefore time.Time) error
 
 	// Edges returns an iterator for a set of edges whose source vertex id's
-	// belong to the (fromID, toID) range and were updated before the (updatedBefore) time
+	// belong to the [fromID, toID] range and were updated before the [updatedBefore] time.
 	Edges(fromID, toID uuid.UUID, updatedBefore time.Time) (EdgeIterator, error)
 }
 
