@@ -31,7 +31,7 @@ func (s *BaseSuite) SetGraph(g graph.Graph) {
 }
 
 // TestUpsertLink verifies the link upsert logic
-func (s *BaseSuite) TestUpsertLink(c check.C) {
+func (s *BaseSuite) TestUpsertLink(c *check.C) {
 	// Create a new link
 	newLink := &graph.Link{
 		URL:         "https://example.com",

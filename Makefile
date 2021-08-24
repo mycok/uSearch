@@ -16,7 +16,7 @@ deps:
 ##	test: Run all test suites with coverage metrics
 test:
 		@echo "[go test] running tests and collecting coverage metrics"
-		@go test -v -tags all_tests -race -coverprofile=coverage.txt -covermode=atomic ./..
+		@go test -v -tags all_tests -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 ##	lint: Perform linting operations on all .go files in the root directory
 lint: lint-check-deps

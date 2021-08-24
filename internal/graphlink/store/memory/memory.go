@@ -15,7 +15,7 @@ import (
 )
 
 // Compile-time check for ensuring InMemoryGraph implements Graph.
-// var _ graph.Graph = (*InMemoryGraph)(nil)
+var _ graph.Graph = (*InMemoryGraph)(nil)
 
 // edgeList contains the slice of edge UUIDs that originate from a link in the graph.
 type edgeList []uuid.UUID
