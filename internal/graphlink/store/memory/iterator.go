@@ -2,7 +2,7 @@ package memory
 
 import "github.com/mycok/uSearch/internal/graphlink/graph"
 
-// LinkIterator servers as a graph.LinkIterator interface concrete
+// LinkIterator type servers as a graph.LinkIterator interface concrete
 // implementation for the in-memory graph store.
 type LinkIterator struct {
 	s            *InMemoryGraph
@@ -45,7 +45,7 @@ func (i *LinkIterator) Link() *graph.Link {
 	return link
 }
 
-// EdgeIterator ervers as a graph.LinkIterator interface concrete
+// EdgeIterator type servers as a graph.LinkIterator interface concrete
 // implementation for the in-memory graph store.
 type EdgeIterator struct {
 	s            *InMemoryGraph
