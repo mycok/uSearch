@@ -100,8 +100,8 @@ func (c *CockroachDBGraph) FindLink(id uuid.UUID) (*graph.Link, error) {
 
 // Links returns an alterator for a set of links whose id's belong
 // to the [fromID, toID] range and were retrieved before the [retrievedBefore] time.
-func (c *CockroachDBGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Time) (graph.LinkIterator, error){
-	rows, err := c.db.Query(linksInPartitionsQuery,fromID, toID, retrievedBefore.UTC())
+func (c *CockroachDBGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Time) (graph.LinkIterator, error) {
+	rows, err := c.db.Query(linksInPartitionsQuery, fromID, toID, retrievedBefore.UTC())
 	if err != nil {
 		return nil, fmt.Errorf("links: %w", err)
 	}

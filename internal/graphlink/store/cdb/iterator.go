@@ -7,8 +7,8 @@ import (
 	"github.com/mycok/uSearch/internal/graphlink/graph"
 )
 
-// LinkIterator servers as a graph.LinkIterator interface concrete
-// implementation for the in-memory graph store.
+// LinkIterator type serves as a graph.LinkIterator interface concrete
+// implementation for the cockroachDB graph store.
 type LinkIterator struct {
 	rows    *sql.Rows
 	lastErr error
@@ -52,4 +52,52 @@ func (i *LinkIterator) Close() error {
 // Link implements graph.LinkIterator.Link()
 func (i *LinkIterator) Link() *graph.Link {
 	return i.link
+}
+
+//  EdgeIterator type servers as a graph.EdgeIterator interface concrete
+// implementation for the cockroachDB graph store.
+type EdgeIterator struct {
+	rows    sql.Rows
+	lastErr error
+	edge    *graph.Edge
+}
+
+// Next implements graph.EdgeIterator.Next()
+func (i *EdgeIterator) Next() bool {
+	if i.lastErr != nil || !i.rows.Next() {
+		return false
+	}
+
+	e := new(graph.Edge)
+
+	i.lastErr = i.rows.Scan(&e.ID, &e.Src, &e.Dest, &e.UpdatedAt)
+	if i.lastErr != nil {
+		return false
+	}
+
+	e.UpdatedAt = e.UpdatedAt.UTC()
+
+	i.edge = e
+
+	return true
+}
+
+// Error implements graph.EdgeIterator.Error()
+func (i *EdgeIterator) Error() error {
+	return i.lastErr
+}
+
+// Close implements graph.EdgeIterator.Close()
+func (i *EdgeIterator) Close() error {
+	err := i.rows.Close()
+	if err != nil {
+		return fmt.Errorf("edge iterator: %w", err)
+	}
+
+	return nil
+}
+
+// Edge implements graph.EdgeIterator.Edge()
+func (i *EdgeIterator) Edge() *graph.Edge {
+	return i.edge
 }
