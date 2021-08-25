@@ -129,12 +129,21 @@ func (c *CockroachDBGraph) UpsertEdge(edge *graph.Edge) error {
 // Edges returns an iterator for a set of edges whose source vertex id's
 // belong to the [fromID, toID] range and were updated before the [updatedBefore] time.
 func (c *CockroachDBGraph) Edges(fromID, toID uuid.UUID, updatedBefore time.Time) (graph.EdgeIterator, error) {
-	rows, err := c.db.Query(edgesInPartionsQuery, fromID, toID, updatedBefore)
+	rows, err := c.db.Query(edgesInPartionsQuery, fromID, toID, updatedBefore.UTC())
 	if err != nil {
 		return nil, fmt.Errorf("edges: %w", err)
 	}
 
 	return &EdgeIterator{rows: *rows}, nil
+}
+
+func(c *CockroachDBGraph) RemoveStaleEdges(fromID uuid.UUID, updatedBefore time.Time) error {
+	_, err := c.db.Exec(removeStaleEdgesQuery, fromID, updatedBefore.UTC())
+	if err != nil {
+		return fmt.Errorf("removeStaleEdges: %w", err)
+	}
+
+	return nil
 }
 
 // isForeignKeyViolationError returns true if error is a foreign key

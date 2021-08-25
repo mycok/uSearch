@@ -188,6 +188,8 @@ func (s *InMemoryGraph) Edges(fromID, toID uuid.UUID, updatedBefore time.Time) (
 	return &EdgeIterator{s: s, edges: list}, nil
 }
 
+// RemoveStaleEdges removes any edge that originates from a specific link ID
+// and was updated before the specified [updatedBefore] time
 func (s *InMemoryGraph) RemoveStaleEdges(fromID uuid.UUID, updatedBefore time.Time) error {
 	// Acquire a write lock to avoid data races while mutating graph data.
 	s.mu.Lock()
