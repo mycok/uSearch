@@ -8,6 +8,7 @@ import (
 	"github.com/mycok/uSearch/internal/graphlink/graph"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 var (
@@ -107,4 +108,31 @@ func (c *CockroachDBGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Ti
 	}
 
 	return &LinkIterator{rows: rows}, nil
+}
+
+// UpsertEdge creates a new or updates an existing edge.
+func (c *CockroachDBGraph) UpsertEdge(edge *graph.Edge) error {
+	err := c.db.QueryRow(upsertEdgeQuery, edge.Src, edge.Dest).Scan(&edge.ID, &edge.UpdatedAt)
+	if err != nil {
+		if isForeignKeyViolationError(err) {
+			err = graph.ErrUnknownEdgeLinks
+		}
+
+		return fmt.Errorf("upsert edge: %w", err)
+	}
+
+	edge.UpdatedAt = edge.UpdatedAt.UTC()
+
+	return nil
+}
+
+// isForeignKeyViolationError returns true if error is a foreign key
+// constraint violation error.
+func isForeignKeyViolationError(err error) bool {
+	pqErr, ok := err.(*pq.Error)
+	if !ok {
+		return false
+	}
+
+	return pqErr.Code.Name() == "foreign_key_violation"
 }
