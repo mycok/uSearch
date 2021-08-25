@@ -3,6 +3,7 @@ package cdb
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/mycok/uSearch/internal/graphlink/graph"
 
@@ -95,4 +96,15 @@ func (c *CockroachDBGraph) FindLink(id uuid.UUID) (*graph.Link, error) {
 	}
 
 	return link, nil
+}
+
+// Links returns an alterator for a set of links whose id's belong
+// to the [fromID, toID] range and were retrieved before the [retrievedBefore] time.
+func (c *CockroachDBGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Time) (graph.LinkIterator, error){
+	rows, err := c.db.Query(linksInPartitionsQuery,fromID, toID, retrievedBefore.UTC())
+	if err != nil {
+		return nil, fmt.Errorf("links: %w", err)
+	}
+
+	return &LinkIterator{rows: rows}, nil
 }
