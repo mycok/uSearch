@@ -8,9 +8,12 @@ import (
 	check "gopkg.in/check.v1"
 )
 
-var _ = check.Suite(new(InMemoryGraphTestSuite))
+// Initialize and register an instance of the InMemoryGraphTestSuite to be
+// executed by check testing package
+var _ = check.Suite(new(InMemoryDBTestSuite))
 
-type InMemoryGraphTestSuite struct {
+// InMemoryGraphTestSuite encapsulates the BaseSuite type tests methods
+type InMemoryDBTestSuite struct {
 	graphtests.BaseSuite
 }
 
@@ -18,6 +21,6 @@ func Test(t *testing.T) {
 	check.TestingT(t)
 }
 
-func (s *InMemoryGraphTestSuite) SetUpTest(c *check.C) {
+func (s *InMemoryDBTestSuite) SetUpTest(c *check.C) {
 	s.SetGraph(NewInMemoryGraph())
 }
