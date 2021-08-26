@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Graph is implemented by objects that mutate or query a link graph.
+// Graph is implemented by objects that mutate or query a link graph / store.
 type Graph interface {
 	// UpsertLink creates a new or updates an existing link
 	UpsertLink(link *Link) error
