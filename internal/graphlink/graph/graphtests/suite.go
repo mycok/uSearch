@@ -20,19 +20,20 @@ import (
 )
 
 // BaseSuite defines a set of re-usable graph-related tests that can
-// be executed against any type that implements the graph.Graph interface
+// be executed against any concrete type that implements the graph.Graph interface.
 type BaseSuite struct {
 	g graph.Graph
 }
 
-// SetGraph configures the test-suite to run all tests against g
+// SetGraph configures the test-suite to run all tests against an instance
+// of graph.Graph.
 func (s *BaseSuite) SetGraph(g graph.Graph) {
 	s.g = g
 }
 
-// TestUpsertLink verifies the link upsert logic
+// TestUpsertLink verifies the link upsert logic.
 func (s *BaseSuite) TestUpsertLink(c *check.C) {
-	// Create a new link
+	// Create a new link.
 	newLink := &graph.Link{
 		URL:         "https://example.com",
 		RetrievedAt: time.Now().Add(-10 * time.Hour),
@@ -40,10 +41,10 @@ func (s *BaseSuite) TestUpsertLink(c *check.C) {
 
 	err := s.g.UpsertLink(newLink)
 	c.Assert(err, check.IsNil)
-	// Expected a new ID to be assigned to the new Link
+	// Expected a new ID to be assigned to the new Link.
 	c.Assert(newLink.ID, check.Not(check.Equals), uuid.Nil)
 
-	// Update newly created link with a new RetrievedAt timestamp
+	// Update newly created link with a new RetrievedAt timestamp.
 	accessedAt := time.Now().Truncate(time.Second).UTC()
 	updatedLink := &graph.Link{
 		ID:          newLink.ID,
@@ -53,16 +54,16 @@ func (s *BaseSuite) TestUpsertLink(c *check.C) {
 
 	err = s.g.UpsertLink(updatedLink)
 	c.Assert(err, check.IsNil)
-	// Link ID changed as a result of a successful upsert / update
+	// Link ID changed as a result of a successful upsert / update.
 	c.Assert(updatedLink.ID, check.Equals, newLink.ID)
 
 	stored, err := s.g.FindLink(updatedLink.ID)
 	c.Assert(err, check.IsNil)
-	// RetrievedAt timestamp was not updated
+	// RetrievedAt timestamp was not updated.
 	c.Assert(stored.RetrievedAt, check.Equals, accessedAt)
 
 	// Attempt to insert a new Link whose URL matches an existing Link
-	// and provide an older accessedAt value
+	// and provide an older accessedAt value.
 	sameURL := &graph.Link{
 		URL:         updatedLink.URL,
 		RetrievedAt: time.Now().Add(-10 * time.Hour),
@@ -73,7 +74,7 @@ func (s *BaseSuite) TestUpsertLink(c *check.C) {
 
 	stored, err = s.g.FindLink(updatedLink.ID)
 	c.Assert(err, check.IsNil)
-	// RetrievedAt timestamp was over-written by an older value
+	// RetrievedAt timestamp was over-written by an older value.
 	c.Assert(stored.RetrievedAt, check.Equals, accessedAt)
 
 	// Create a new link and then attempt to update its URL to the same as
@@ -83,7 +84,7 @@ func (s *BaseSuite) TestUpsertLink(c *check.C) {
 	}
 	err = s.g.UpsertLink(dup)
 	c.Assert(err, check.IsNil)
-	// Expected a linkID to be assigned to the new link
+	// Expected a linkID to be assigned to the new link.
 	c.Assert(dup.ID, check.Not(check.Equals), uuid.Nil)
 }
 
