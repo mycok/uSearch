@@ -113,7 +113,7 @@ func (s *InMemoryGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Time)
 	// Release the read lock after the read operations.
 	s.mu.RUnlock()
 
-	return &LinkIterator{s: s, links: list}, nil
+	return &linkIterator{s: s, links: list}, nil
 }
 
 // UpsertEdge creates a new or updates an existing edge.
@@ -185,7 +185,7 @@ func (s *InMemoryGraph) Edges(fromID, toID uuid.UUID, updatedBefore time.Time) (
 	// Release the read lock after the read operations.
 	s.mu.RUnlock()
 
-	return &EdgeIterator{s: s, edges: list}, nil
+	return &edgeIterator{s: s, edges: list}, nil
 }
 
 // RemoveStaleEdges removes any edge that originates from a specific link ID
