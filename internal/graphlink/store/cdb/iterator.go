@@ -54,10 +54,10 @@ func (i *LinkIterator) Link() *graph.Link {
 	return i.link
 }
 
-//  EdgeIterator type servers as a graph.EdgeIterator interface concrete
+// EdgeIterator type servers as a graph.EdgeIterator interface concrete
 // implementation for the cockroachDB graph store.
 type EdgeIterator struct {
-	rows    sql.Rows
+	rows    *sql.Rows
 	lastErr error
 	edge    *graph.Edge
 }

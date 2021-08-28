@@ -48,7 +48,7 @@ func (s *CockroachDBTestSuite) TearDownSuite(c *check.C) {
 		s.flushDB(c)
 		c.Assert(s.db.Close(), check.IsNil)
 	}
-} 
+}
 
 // SetUpTest runs before each test in the test suite. it's
 // responsible for setting up the requirements necessary for
