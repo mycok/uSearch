@@ -16,3 +16,6 @@
 
 # Test coverage files
 coverage.text
+
+# IDE cache directories
+.vscode/**
