@@ -8,13 +8,13 @@ import (
 	"github.com/mycok/uSearch/internal/textindexer/index"
 
 	"github.com/blevesearch/bleve"
-	// "github.com/blevesearch/bleve/search/query"
+	"github.com/blevesearch/bleve/search/query"
 
 	"github.com/google/uuid"
 )
 
 // Size of each page of results that is cached locally by the iterator.
-// const batchSize = 10
+const batchSize = 10
 
 // Compile-time check to ensure InMemoryBleveIndexer implements Indexer.
 // var _ index.Indexer = (*InMemoryBleveIndexer)(nil)
@@ -110,4 +110,28 @@ func copyDoc(doc *index.Document) *index.Document {
 	*docCopy = *doc
 
 	return docCopy
+}
+
+// Search the index for a particular query and return a result iterator.
+func (i *InMemoryBleveIndexer) Search(q index.Query) (index.Iterator, error) {
+	var bleveQuery query.Query
+
+	switch q.Type {
+	case index.QueryTypePhrase:
+		bleveQuery = bleve.NewMatchPhraseQuery(q.Expression)
+	default:
+		bleveQuery = bleve.NewMatchQuery(q.Expression)
+	}
+
+	searchReq := bleve.NewSearchRequest(bleveQuery)
+	searchReq.SortBy([]string{"-PageRank", "-_score"})
+	searchReq.Size = batchSize
+	searchReq.From = int(q.Offset)
+
+	sr, err := i.idx.Search(searchReq)
+	if err != nil {
+		return nil, fmt.Errorf("search: %w", err)
+	}
+
+	return &bleveIterator{idx: i, searchReq: searchReq, sr: sr, cumIdx: q.Offset}, nil
 }
