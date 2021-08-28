@@ -7,16 +7,17 @@ import (
 	"github.com/mycok/uSearch/internal/graphlink/graph"
 )
 
-// LinkIterator type serves as a graph.LinkIterator interface concrete
+// linkIterator type serves as a graph.LinkIterator interface concrete
 // implementation for the cockroachDB graph store.
-type LinkIterator struct {
+type linkIterator struct {
 	rows    *sql.Rows
 	lastErr error
 	link    *graph.Link
 }
 
-// Next implements graph.LinkIterator.Next()
-func (i *LinkIterator) Next() bool {
+// Next implements graph.LinkIterator.Next() which returns true to indicate
+// the presence of a valid link object and false otherwise.
+func (i *linkIterator) Next() bool {
 	if i.lastErr != nil || !i.rows.Next() {
 		return false
 	}
@@ -34,13 +35,15 @@ func (i *LinkIterator) Next() bool {
 	return true
 }
 
-// Error implements graph.LinkIterator.Error()
-func (i *LinkIterator) Error() error {
+// Error implements graph.LinkIterator.Error() and returns the last error
+// returned by calling graph.LinkIterator.Next().
+func (i *linkIterator) Error() error {
 	return i.lastErr
 }
 
-// Close implements graph.LinkIterator.Close()
-func (i *LinkIterator) Close() error {
+// Close implements graph.LinkIterator.Close() and releases any allocated resources
+// still being used by the graph.LinkIterator.
+func (i *linkIterator) Close() error {
 	err := i.rows.Close()
 	if err != nil {
 		return fmt.Errorf("link iterator: %w", err)
@@ -50,20 +53,21 @@ func (i *LinkIterator) Close() error {
 }
 
 // Link implements graph.LinkIterator.Link()
-func (i *LinkIterator) Link() *graph.Link {
+func (i *linkIterator) Link() *graph.Link {
 	return i.link
 }
 
-// EdgeIterator type servers as a graph.EdgeIterator interface concrete
+// edgeIterator type servers as a graph.EdgeIterator interface concrete
 // implementation for the cockroachDB graph store.
-type EdgeIterator struct {
+type edgeIterator struct {
 	rows    *sql.Rows
 	lastErr error
 	edge    *graph.Edge
 }
 
-// Next implements graph.EdgeIterator.Next()
-func (i *EdgeIterator) Next() bool {
+// Next implements graph.EdgeIterator.Next() which returns true to indicate
+// the presence of a valid edge object and false otherwise.
+func (i *edgeIterator) Next() bool {
 	if i.lastErr != nil || !i.rows.Next() {
 		return false
 	}
@@ -82,13 +86,15 @@ func (i *EdgeIterator) Next() bool {
 	return true
 }
 
-// Error implements graph.EdgeIterator.Error()
-func (i *EdgeIterator) Error() error {
+// Error implements graph.EdgeIterator.Error() and returns the last error
+// returned by calling graph.EdgeIterator.Next().
+func (i *edgeIterator) Error() error {
 	return i.lastErr
 }
 
-// Close implements graph.EdgeIterator.Close()
-func (i *EdgeIterator) Close() error {
+// Close implements graph.EdgeIterator.Close() and releases any allocated resources
+// still being used by the graph.EdgeIterator.
+func (i *edgeIterator) Close() error {
 	err := i.rows.Close()
 	if err != nil {
 		return fmt.Errorf("edge iterator: %w", err)
@@ -97,7 +103,8 @@ func (i *EdgeIterator) Close() error {
 	return nil
 }
 
-// Edge implements graph.EdgeIterator.Edge()
-func (i *EdgeIterator) Edge() *graph.Edge {
+// Edge implements graph.EdgeIterator.Edge() which returns an edge object
+// whenever a call to graph.EdgeIterator.Next() returns true.
+func (i *edgeIterator) Edge() *graph.Edge {
 	return i.edge
 }

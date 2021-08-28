@@ -107,7 +107,7 @@ func (c *CockroachDBGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Ti
 		return nil, fmt.Errorf("links: %w", err)
 	}
 
-	return &LinkIterator{rows: rows}, nil
+	return &linkIterator{rows: rows}, nil
 }
 
 // UpsertEdge creates a new or updates an existing edge.
@@ -134,7 +134,7 @@ func (c *CockroachDBGraph) Edges(fromID, toID uuid.UUID, updatedBefore time.Time
 		return nil, fmt.Errorf("edges: %w", err)
 	}
 
-	return &EdgeIterator{rows: rows}, nil
+	return &edgeIterator{rows: rows}, nil
 }
 
 // RemoveStaleEdges removes edges that belong to the provided link id [fromID]
