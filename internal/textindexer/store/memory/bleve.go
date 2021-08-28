@@ -17,7 +17,7 @@ import (
 const batchSize = 10
 
 // Compile-time check to ensure InMemoryBleveIndexer implements Indexer.
-// var _ index.Indexer = (*InMemoryBleveIndexer)(nil)
+var _ index.Indexer = (*InMemoryBleveIndexer)(nil)
 
 type bleveDoc struct {
 	Title    string
@@ -85,6 +85,56 @@ func (i *InMemoryBleveIndexer) FindByID(linkID uuid.UUID) (*index.Document, erro
 	return i.findByID(linkID.String())
 }
 
+// Search the index for a particular query and return a result iterator.
+func (i *InMemoryBleveIndexer) Search(q index.Query) (index.Iterator, error) {
+	var bleveQuery query.Query
+
+	switch q.Type {
+	case index.QueryTypePhrase:
+		bleveQuery = bleve.NewMatchPhraseQuery(q.Expression)
+	default:
+		bleveQuery = bleve.NewMatchQuery(q.Expression)
+	}
+
+	searchReq := bleve.NewSearchRequest(bleveQuery)
+	searchReq.SortBy([]string{"-PageRank", "-_score"})
+	searchReq.Size = batchSize
+	searchReq.From = int(q.Offset)
+
+	sr, err := i.idx.Search(searchReq)
+	if err != nil {
+		return nil, fmt.Errorf("search: %w", err)
+	}
+
+	return &bleveIterator{idx: i, searchReq: searchReq, sr: sr, cumIdx: q.Offset}, nil
+}
+
+// UpdateScore updates the PageRank score for a document with the specified
+// link ID. If no such document exists, a placeholder document with the
+// provided score will be created.
+func (i *InMemoryBleveIndexer) UpdateScore(linkID uuid.UUID, score float64) error {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+
+	key := linkID.String()
+	doc, found := i.docs[key]
+	if !found {
+		doc = &index.Document{
+			LinKID: linkID,
+		}
+		i.docs[key] = doc
+
+	}
+
+	// Update the document's PageRank with the provided score and re-index the document.
+	doc.PageRank = score
+	if err := i.idx.Index(key, makeBleveDoc(doc)); err != nil {
+		return fmt.Errorf("update score: %w", err)
+	}
+
+	return nil
+}
+
 // findByID looks up a document by its link UUID expressed as a string.
 func (i *InMemoryBleveIndexer) findByID(linkID string) (*index.Document, error) {
 	i.mu.Lock()
@@ -112,26 +162,3 @@ func copyDoc(doc *index.Document) *index.Document {
 	return docCopy
 }
 
-// Search the index for a particular query and return a result iterator.
-func (i *InMemoryBleveIndexer) Search(q index.Query) (index.Iterator, error) {
-	var bleveQuery query.Query
-
-	switch q.Type {
-	case index.QueryTypePhrase:
-		bleveQuery = bleve.NewMatchPhraseQuery(q.Expression)
-	default:
-		bleveQuery = bleve.NewMatchQuery(q.Expression)
-	}
-
-	searchReq := bleve.NewSearchRequest(bleveQuery)
-	searchReq.SortBy([]string{"-PageRank", "-_score"})
-	searchReq.Size = batchSize
-	searchReq.From = int(q.Offset)
-
-	sr, err := i.idx.Search(searchReq)
-	if err != nil {
-		return nil, fmt.Errorf("search: %w", err)
-	}
-
-	return &bleveIterator{idx: i, searchReq: searchReq, sr: sr, cumIdx: q.Offset}, nil
-}
