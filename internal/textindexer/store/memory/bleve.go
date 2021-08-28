@@ -79,6 +79,23 @@ func (i *InMemoryBleveIndexer) Index(doc *index.Document) error {
 	return nil
 }
 
+// FindByID looks up a document by its link ID.
+func (i *InMemoryBleveIndexer) FindByID(linkID uuid.UUID) (*index.Document, error) {
+	return i.findByID(linkID.String())
+}
+
+// findByID looks up a document by its link UUID expressed as a string.
+func (i *InMemoryBleveIndexer) findByID(linkID string) (*index.Document, error) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+
+	if doc, found := i.docs[linkID]; found {
+		return copyDoc(doc), nil
+	}
+
+	return nil, fmt.Errorf("find by id: %w", index.ErrNotFound)
+}
+
 func makeBleveDoc(doc *index.Document) bleveDoc {
 	return bleveDoc{
 		Title:    doc.Title,
