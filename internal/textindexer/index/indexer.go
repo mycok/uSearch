@@ -55,7 +55,6 @@ const (
 
 // Query encapsulates a set of properties to use when searching indexed
 // documents.
-
 type Query struct {
 	// The way that the indexer should interpret the search expression.
 	Type QueryType
@@ -66,4 +65,3 @@ type Query struct {
 	// The number of search results to skip.
 	Offset uint64
 }
-

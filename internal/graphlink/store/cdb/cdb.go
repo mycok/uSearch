@@ -46,7 +46,7 @@ var (
 )
 
 // Compile-time check for ensuring CockroachDbGraph implements Graph.
-// var _ graph.Graph = (*CockroachDBGraph)(nil)
+var _ graph.Graph = (*CockroachDBGraph)(nil)
 
 // CockroachDBGraph implements a Graph concrete type that persists its links
 //  and edges to a cockroachdb instance.
@@ -134,10 +134,12 @@ func (c *CockroachDBGraph) Edges(fromID, toID uuid.UUID, updatedBefore time.Time
 		return nil, fmt.Errorf("edges: %w", err)
 	}
 
-	return &EdgeIterator{rows: *rows}, nil
+	return &EdgeIterator{rows: rows}, nil
 }
 
-func(c *CockroachDBGraph) RemoveStaleEdges(fromID uuid.UUID, updatedBefore time.Time) error {
+// RemoveStaleEdges removes edges that belong to the provided link id [fromID]
+// and were updated before the [updatedBefore] time
+func (c *CockroachDBGraph) RemoveStaleEdges(fromID uuid.UUID, updatedBefore time.Time) error {
 	_, err := c.db.Exec(removeStaleEdgesQuery, fromID, updatedBefore.UTC())
 	if err != nil {
 		return fmt.Errorf("removeStaleEdges: %w", err)
