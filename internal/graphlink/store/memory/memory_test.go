@@ -9,10 +9,10 @@ import (
 )
 
 // Initialize and register an instance of the InMemoryGraphTestSuite to be
-// executed by check testing package
+// executed by check testing package.
 var _ = check.Suite(new(InMemoryDBTestSuite))
 
-// InMemoryGraphTestSuite encapsulates the BaseSuite type tests methods
+// InMemoryGraphTestSuite embeds the BaseSuite type tests methods.
 type InMemoryDBTestSuite struct {
 	graphtests.BaseSuite
 }
@@ -21,6 +21,9 @@ func Test(t *testing.T) {
 	check.TestingT(t)
 }
 
+// SetUpTest runs before each test in the test suite. it's
+// responsible for setting up the requirements necessary for
+// running that specific test. ie database reset.
 func (s *InMemoryDBTestSuite) SetUpTest(c *check.C) {
 	s.SetGraph(NewInMemoryGraph())
 }

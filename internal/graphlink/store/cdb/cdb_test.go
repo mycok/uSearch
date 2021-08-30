@@ -11,21 +11,21 @@ import (
 )
 
 // Initialize and register an instance of the CockroachDBTestSuite to be
-// executed by check testing package
+// executed by check testing package.
 var _ = check.Suite(new(CockroachDBTestSuite))
 
-// CockroachDBTestSuite encapsulates the BaseSuite type tests methods
+// CockroachDBTestSuite embeds the BaseSuite type tests methods.
 type CockroachDBTestSuite struct {
 	db *sql.DB
 	graphtests.BaseSuite
 }
 
-// Register our test suite with [go.test]
+// Register our test suite with [go.test].
 func Test(t *testing.T) {
 	check.TestingT(t)
 }
 
-// SetUpSuite initializes and sets up the necessary testing env for the test suite
+// SetUpSuite initializes and sets up the necessary testing env for the test suite.
 func (s *CockroachDBTestSuite) SetUpSuite(c *check.C) {
 	dsn := os.Getenv("CDB_DSN")
 	if dsn == "" {
