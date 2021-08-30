@@ -34,9 +34,10 @@ type InMemoryBleveIndexer struct {
 }
 
 // NewInMemoryBleveIndexer creates and returns a text indexer that
-// uses an in-memorybleve instance for indexing documents.
+// uses an InMemoryBleve instance for indexing documents.
 func NewInMemoryBleveIndexer() (*InMemoryBleveIndexer, error) {
 	mapping := bleve.NewIndexMapping()
+
 	idx, err := bleve.NewMemOnly(mapping)
 	if err != nil {
 		return nil, err

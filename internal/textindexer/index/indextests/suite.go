@@ -35,7 +35,7 @@ func (s *BaseSuite) TestIndexDocument(c *check.C) {
 	}
 
 	err := s.idx.Index(doc)
-	c.Assert(err, check.IsNil)
+	c.Assert(err, check.IsNil, check.Commentf("-----TestIndexDocument Error-----:" + err.Error()))
 
 	// Update existing document
 	updatedDoc := &index.Document{
