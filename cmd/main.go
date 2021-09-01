@@ -7,7 +7,7 @@ import (
 	"github.com/mycok/uSearch/internal/textindexer/store/memory"
 )
 
-func main()  {
+func main() {
 	idx, err := memory.NewInMemoryBleveIndexer()
 
 	if err != nil {
@@ -15,7 +15,7 @@ func main()  {
 	}
 
 	log.Println(fmt.Printf("----This is the new indexer instance----: %+#v", idx))
-	
+
 	if err = idx.Close(); err != nil {
 		log.Println(fmt.Printf("----closing indexer instance----: %+#v", err))
 	}
