@@ -162,4 +162,3 @@ func copyDoc(doc *index.Document) *index.Document {
 
 	return docCopy
 }
-

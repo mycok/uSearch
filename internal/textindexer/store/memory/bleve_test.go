@@ -39,6 +39,6 @@ func (s *InMemoryBleveTestSuite) SetupTest(c *check.C) {
 
 // TearDownTest ensures that the indexer instance connection is closed
 // and all allocated resources are released.
-func (s *InMemoryBleveTestSuite) TearDownTest(c *check.C) {	
+func (s *InMemoryBleveTestSuite) TearDownTest(c *check.C) {
 	c.Assert(s.idx.Close(), check.IsNil)
 }
