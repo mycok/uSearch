@@ -8,7 +8,7 @@ import (
 	check "gopkg.in/check.v1"
 )
 
-// Initialize and register an instance of the InMemoryBleveTestSuite to be
+// Initialize and register a pointer instance of the InMemoryBleveTestSuite to be
 // executed by check testing package.
 var _ = check.Suite(new(InMemoryBleveTestSuite))
 
@@ -18,7 +18,7 @@ type InMemoryBleveTestSuite struct {
 	idx *InMemoryBleveIndexer
 }
 
-// Register our test suite with [go.test].
+// Register test suite with [go.test].
 func Test(t *testing.T) {
 	check.TestingT(t)
 }
@@ -26,7 +26,7 @@ func Test(t *testing.T) {
 // SetUpTest runs before each test in the test suite. it's
 // responsible for setting up the requirements necessary for
 // running that specific test. ie database reset.
-func (s *InMemoryBleveTestSuite) SetupTest(c *check.C) {
+func (s *InMemoryBleveTestSuite) SetUpTest(c *check.C) {
 	idx, err := NewInMemoryBleveIndexer()
 	c.Assert(err, check.IsNil)
 
