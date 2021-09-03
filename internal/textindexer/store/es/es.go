@@ -1,11 +1,13 @@
 package es
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mycok/uSearch/internal/textindexer/index"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -71,7 +73,7 @@ type esErrorRes struct {
 
 // esError satisfies the Error interface by implementing Error() string function.
 type esError struct {
-	Type string `json:"type"`
+	Type   string `json:"type"`
 	Reason string `json:"reason"`
 }
 
@@ -81,10 +83,9 @@ func (e esError) Error() string {
 
 // ElasticSearchIndexer uses an elastic search instance to catalogue and search documents.
 type ElasticsearchIndexer struct {
-	es *elasticsearch.Client
+	es         *elasticsearch.Client
 	refreshOpt func(*esapi.UpdateRequest)
 }
-
 
 // NewElasticsearchIndexer creates and returns a text indexer that
 // uses an elasticsearch instance to index and query documents.
@@ -109,14 +110,48 @@ func NewElasticsearchIndexer(esNodes []string, syncUpdates bool) (*Elasticsearch
 	}
 
 	return &ElasticsearchIndexer{
-		es: es,
+		es:         es,
 		refreshOpt: refreshOpt,
 	}, nil
 }
 
+// Index inserts a new document to the index or updates the index entry
+// for and existing document.
+func (i *ElasticsearchIndexer) Index(doc *index.Document) error {
+	if doc.LinKID == uuid.Nil {
+		return fmt.Errorf("index: %w", index.ErrMissingLinkID)
+	}
+
+	var (
+		buf   bytes.Buffer
+		esDoc = makeEsDoc(doc)
+	)
+
+	update := map[string]interface{}{
+		"doc":           esDoc,
+		"doc_as_upsert": true,
+	}
+
+	if err := json.NewEncoder(&buf).Encode(update); err != nil {
+		return fmt.Errorf("index: %w", err)
+	}
+
+	res, err := i.es.Update(indexName, esDoc.LinkID, &buf, i.refreshOpt)
+	if err != nil {
+		return fmt.Errorf("index: %w", err)
+	}
+
+	var updateRes esUpdateRes
+	if err = unmarshalResponse(res, &updateRes); err != nil {
+		return fmt.Errorf("index: %w", err)
+	}
+
+	return nil
+}
+
 func createIndex(es *elasticsearch.Client) error {
 	mappingsReader := strings.NewReader(esMappings)
-	
+
 	res, err := es.Indices.Create(indexName, es.Indices.Create.WithBody(mappingsReader))
 	if err != nil {
 		return fmt.Errorf("failed to create ES index: %w", err)
@@ -139,11 +174,12 @@ func unmarshalError(res *esapi.Response) error {
 
 func unmarshalResponse(res *esapi.Response, to interface{}) error {
 	defer func() {
-		 _ = res.Body.Close()
+		_ = res.Body.Close()
 	}()
 
 	if res.IsError() {
 		var errRes esErrorRes
+
 		if err := json.NewDecoder(res.Body).Decode(&errRes); err != nil {
 			return err
 		}
@@ -158,6 +194,25 @@ func runSearch(es *elasticsearch.Client, searchQuery map[string]interface{}) (*e
 	return nil, nil
 }
 
-func mapEsDoc(doc *esDoc) *index.Document {
-	return nil
+func mapEsDoc(d *esDoc) *index.Document {
+	return &index.Document{
+		LinKID:    uuid.MustParse(d.LinkID),
+		URL:       d.URL,
+		Title:     d.Title,
+		Content:   d.Content,
+		IndexedAt: d.IndexedAt.UTC(),
+		PageRank:  d.PageRank,
+	}
+}
+
+func makeEsDoc(d *index.Document) esDoc {
+	// We intentionally skip PageRank as we don't want updates to
+	// overwrite existing PageRank values.
+	return esDoc{
+		LinkID:    d.LinKID.String(),
+		URL:       d.URL,
+		Title:     d.Title,
+		Content:   d.Content,
+		IndexedAt: d.IndexedAt.UTC(),
+	}
 }
