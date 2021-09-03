@@ -16,7 +16,7 @@ import (
 )
 
 // Compile-time check to ensure ElasticSearchIndexer implements Indexer.
-// var _ index.Indexer = (*ElasticsearchIndexer)(nil)
+var _ index.Indexer = (*ElasticsearchIndexer)(nil)
 
 // The name of the elasticsearch index to use.
 const indexName = "textIndexer"
@@ -222,6 +222,37 @@ func (i *ElasticsearchIndexer) Search(q index.Query) (index.Iterator, error) {
 		sr:        searchRes,
 		cumIdx:    q.Offset,
 	}, nil
+}
+
+// UpdateScore updates the PageRank score for a document with the specified
+// link ID. If no such document exists, a placeholder document with the
+// provided score will be created.
+func (i *ElasticsearchIndexer) UpdateScore(linkID uuid.UUID, score float64) error {
+	var buf bytes.Buffer
+
+	update := map[string]interface{}{
+		"doc": map[string]interface{}{
+			"LinkID":   linkID.String(),
+			"PageRank": score,
+		},
+		"doc_as_upsert": true,
+	}
+
+	if err := json.NewEncoder(&buf).Encode(update); err != nil {
+		return fmt.Errorf("update score: %w", err)
+	}
+
+	res, err := i.es.Update(indexName, linkID.String(), &buf, i.refreshOpt)
+	if err != nil {
+		return fmt.Errorf("update score: %w", err)
+	}
+
+	var updateRes esUpdateRes
+	if err = unmarshalResponse(res, &updateRes); err != nil {
+		return fmt.Errorf("update score: %w", err)
+	}
+
+	return nil
 }
 
 func createIndex(es *elasticsearch.Client) error {
