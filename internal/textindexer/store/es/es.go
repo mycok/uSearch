@@ -2,6 +2,7 @@ package es
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -149,6 +150,37 @@ func (i *ElasticsearchIndexer) Index(doc *index.Document) error {
 	return nil
 }
 
+
+// FindByID looks up a document by its link ID.
+func (i *ElasticsearchIndexer) FindByID(linkID uuid.UUID) (*index.Document, error) {
+	// var buf bytes.Buffer
+
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match": map[string]interface{}{
+				"LinKID": linkID.String(),
+			},
+		},
+		"from": 0,
+		"size": 1,
+	}
+
+	// if err := json.NewEncoder(&buf).Encode(query); err != nil {
+	// 	return nil, fmt.Errorf("find by id: %w", err)
+	// }
+
+	searchRes, err := runSearch(i.es, query)
+	if err != nil {
+		return nil, fmt.Errorf("find by id: %w", err)
+	}
+
+	if len(searchRes.Hits.HitList) != 1 {
+		return nil, fmt.Errorf("find by id: %w", index.ErrNotFound)
+	}
+
+	return mapEsDoc(&searchRes.Hits.HitList[0].DocSource), nil
+}
+
 func createIndex(es *elasticsearch.Client) error {
 	mappingsReader := strings.NewReader(esMappings)
 
@@ -191,7 +223,28 @@ func unmarshalResponse(res *esapi.Response, to interface{}) error {
 }
 
 func runSearch(es *elasticsearch.Client, searchQuery map[string]interface{}) (*esSearchRes, error) {
-	return nil, nil
+	var buf bytes.Buffer
+
+	if err := json.NewEncoder(&buf).Encode(searchQuery); err != nil {
+		return nil, fmt.Errorf("find by id: %w", err)
+	}
+
+	// Perform the search
+	res, err := es.Search(
+		es.Search.WithContext(context.Background()),
+		es.Search.WithIndex(indexName),
+		es.Search.WithBody(&buf),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var esRes esSearchRes
+	if err = unmarshalResponse(res, &esRes); err != nil {
+		return nil, err
+	}
+
+	return &esRes, nil
 }
 
 func mapEsDoc(d *esDoc) *index.Document {
