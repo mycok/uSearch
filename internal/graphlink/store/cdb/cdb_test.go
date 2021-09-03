@@ -53,7 +53,7 @@ func (s *CockroachDBTestSuite) TearDownSuite(c *check.C) {
 // SetUpTest runs before each test in the test suite. it's
 // responsible for setting up the requirements necessary for
 // running that specific test. ie database reset.
-func (s *CockroachDBTestSuite) SetupTest(c *check.C) {
+func (s *CockroachDBTestSuite) SetUpTest(c *check.C) {
 	s.flushDB(c)
 }
 
