@@ -12,7 +12,7 @@ type Indexer interface {
 	// FindByID looks up a document by its link ID.
 	FindByID(linkID uuid.UUID) (*Document, error)
 
-	// Search the index for a particular query and return back a result
+	// Search the index for a particular query and return a result
 	// iterator.
 	Search(query Query) (Iterator, error)
 

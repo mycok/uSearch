@@ -82,7 +82,7 @@ func (e esError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Type, e.Reason)
 }
 
-// ElasticSearchIndexer uses an elastic search instance to catalogue and search documents.
+// ElasticsearchIndexer uses an elastic search instance to catalogue and search documents.
 type ElasticsearchIndexer struct {
 	es         *elasticsearch.Client
 	refreshOpt func(*esapi.UpdateRequest)
@@ -150,7 +150,6 @@ func (i *ElasticsearchIndexer) Index(doc *index.Document) error {
 	return nil
 }
 
-
 // FindByID looks up a document by its link ID.
 func (i *ElasticsearchIndexer) FindByID(linkID uuid.UUID) (*index.Document, error) {
 	// var buf bytes.Buffer
@@ -179,6 +178,50 @@ func (i *ElasticsearchIndexer) FindByID(linkID uuid.UUID) (*index.Document, erro
 	}
 
 	return mapEsDoc(&searchRes.Hits.HitList[0].DocSource), nil
+}
+
+// Search the index for a particular query and return a result iterator.
+func (i *ElasticsearchIndexer) Search(q index.Query) (index.Iterator, error) {
+	var qtype string
+	switch q.Type {
+	case index.QueryTypePhrase:
+		qtype = "phrase"
+	default:
+		qtype = "best_fields"
+	}
+
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"function_score": map[string]interface{}{
+				"query": map[string]interface{}{
+					"multi_match": map[string]interface{}{
+						"type":   qtype,
+						"query":  q.Expression,
+						"fields": []string{"Title", "Content"},
+					},
+				},
+				"script_score": map[string]interface{}{
+					"script": map[string]interface{}{
+						"source": "_score + doc['PageRank'].value",
+					},
+				},
+			},
+		},
+		"from": q.Offset,
+		"size": batchSize,
+	}
+
+	searchRes, err := runSearch(i.es, query)
+	if err != nil {
+		return nil, fmt.Errorf("search: %w", err)
+	}
+
+	return &esIterator{
+		es:        i.es,
+		searchReq: query,
+		sr:        searchRes,
+		cumIdx:    q.Offset,
+	}, nil
 }
 
 func createIndex(es *elasticsearch.Client) error {
