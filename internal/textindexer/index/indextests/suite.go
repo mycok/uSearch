@@ -129,7 +129,7 @@ func (s *BaseSuite) TestPhraseSearch(c *check.C) {
 		expectedIDs []uuid.UUID
 	)
 
-	// Insert and assign scrores / page ranks to 50 documents.
+	// Insert and assign scores / page ranks to 50 documents.
 	for i := 0; i < numOfDocs; i++ {
 		id := uuid.New()
 		doc := &index.Document{
@@ -168,7 +168,7 @@ func (s *BaseSuite) TestMatchSearch(c *check.C) {
 		expectedIDs []uuid.UUID
 	)
 
-	// Insert and assign scrores / page ranks to 50 documents.
+	// Insert and assign scores / page ranks to 50 documents.
 	for i := 0; i < numOfDocs; i++ {
 		id := uuid.New()
 		doc := &index.Document{
@@ -206,7 +206,7 @@ func (s *BaseSuite) TestMatchSearchWithOffset(c *check.C) {
 		expectedIDs []uuid.UUID
 	)
 
-	// Insert and assign scrores / page ranks to 50 documents.
+	// Insert and assign scores / page ranks to 50 documents.
 	for i := 0; i < numOfDocs; i++ {
 		id := uuid.New()
 		expectedIDs = append(expectedIDs, id)
@@ -276,7 +276,7 @@ func (s *BaseSuite) TestUpdateScore(c *check.C) {
 	c.Assert(err, check.IsNil)
 	c.Assert(iterateDocs(c, it), check.DeepEquals, expectedIDs)
 
-	// Update the pagerank scores so that results are sorted in the
+	// Update the PageRank scores so that results are sorted in the
 	// reverse order.
 	for i := 0; i < numOfDocs; i++ {
 		err = s.idx.UpdateScore(expectedIDs[i], float64(i))
