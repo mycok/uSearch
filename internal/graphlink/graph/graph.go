@@ -14,7 +14,7 @@ type Graph interface {
 	// FindLink performs a lookup by id
 	FindLink(id uuid.UUID) (*Link, error)
 
-	// Links returns an alterator for a set of links whose id's belong
+	// Links returns an iterator for a set of links whose id's belong
 	// to the [fromID, toID] range and were retrieved before the [retrievedBefore] time
 	Links(fromID, toID uuid.UUID, retrievedBefore time.Time) (LinkIterator, error)
 
