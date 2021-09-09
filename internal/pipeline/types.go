@@ -2,6 +2,27 @@ package pipeline
 
 import "context"
 
+// Source should be implemented by types that generate Payload instances which can be
+// used as inputs to a Pipeline instance.
+type Source interface {
+	// Next fetches the next available payload from the source and returns true.
+	// If no more payloads are available or an error occurs, calls to Next return false.
+	Next(context.Context) bool
+
+	// Payload returns the next payload to be processed.
+	Payload() Payload
+
+	// Error returns the last error observed by the source.
+	Error() error
+}
+
+// Sink should be implemented by types that serve as the last part of the pipeline.
+type Sink interface {
+	// Consume processes a Payload instance that has been emitted out of
+	// a Pipeline instance.
+	Consume(context.Context, Payload) error
+}
+
 // Payload should be implemented by types / values that can be sent through the pipeline.
 type Payload interface {
 	// Clone returns a deep-copy of the original payload
@@ -11,6 +32,24 @@ type Payload interface {
 	// reaches the pipeline sink or it gets discarded by one of the
 	// pipeline stages.
 	MarkAsProcessed()
+}
+
+// StageParams encapsulates the information required for executing a pipeline
+// stage. The pipeline passes a StageParams instance to the Run() method of
+// each stage.
+type StageParams interface {
+	// StageIndex returns the current position of this stage in the pipeline.
+	StageIndex() int
+
+	// Input returns a read-only channel for reading the input payloads for a stage.
+	Input() <-chan Payload
+
+	// Output returns a write-only channel for writing the output payloads for a stage.
+	Output() chan<- Payload
+
+	// Error returns a write-only channel for writing errors that were encountered by
+	// a stage while processing payloads.
+	Error() chan<- error
 }
 
 // Processor is implemented by types that can process Payloads as part of a
@@ -33,28 +72,10 @@ func (f ProcessorFunc) Process(ctx context.Context, p Payload) (Payload, error) 
 	return f(ctx, p)
 }
 
-// StageParams encapsulates the information required for executing a pipeline
-// stage. The pipeline passes a StageParams instance to the Run() method of
-// each stage.
-type StageParams interface {
-	// StageIndex returns the current position of this stage in the pipeline.
-	StageIndex() int
-
-	// Input returns a read-only channel for reading the input payloads for a stage.
-	Input() <-chan Payload
-
-	// Output returns a write-only channel for writing the output payloads for a stage.
-	Output() chan<- Payload
-
-	// Error returns a write-only channel for writing errors that were encountered by
-	// a stage while processing payloads.
-	Error() chan<- error
-}
-
 // StageRunner should be implemented by types that can be strung together to form a
 // multi-stage pipeline.
 type StageRunner interface {
-	// Run implements the processing logic for this stage by reading
+	// Run implements the processing logic for the stage by reading
 	// incoming Payloads from an input channel, processing them and
 	// outputting the results to an output channel.
 	//
@@ -63,25 +84,4 @@ type StageRunner interface {
 	// - the provided context expires OR
 	// - an error occurs while processing payloads.
 	Run(context.Context, StageParams)
-}
-
-// Source should be implemented by types that generate Payload instances which can be
-// used as inputs to a Pipeline instance.
-type Source interface {
-	// Next fetches the next available payload from the source and returns true.
-	// If no more payloads are available or an error occurs, calls to Next return false.
-	Next(context.Context) bool
-
-	// Payload returns the next payload to be processed.
-	Payload() Payload
-
-	// Error returns the last error observed by the source.
-	Error() error
-}
-
-// Sink should be implemented by types that serve as the last part of the pipeline.
-type Sink interface {
-	// Consume processes a Payload instance that has been emitted out of
-	// a Pipeline instance.
-	Consume(context.Context, Payload) error
 }
