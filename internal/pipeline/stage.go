@@ -3,7 +3,11 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"sync"
 )
+
+// TODO: Refactor type constructors to return concrete struct types as
+// opposed to interfaces
 
 // Compile-time check for ensuring fifo implements StageRunner.
 var _ StageRunner = (*fifo)(nil)
@@ -16,14 +20,14 @@ type fifo struct {
 // first-out fashion. Each input is passed to the specified processor and its
 // output is emitted to the next stage.
 func FIFO(proc Processor) StageRunner {
-	return fifo{
+	return &fifo{
 		proc: proc,
 	}
 }
 
 // Run implements the StageRunner interface.
 // It implements the payload processing loop for a single stage of the pipeline.
-func (r fifo) Run(ctx context.Context, params StageParams) {
+func (r *fifo) Run(ctx context.Context, params StageParams) {
 	for {
 		select {
 		case <-ctx.Done(): // Ask context to close / shutdown.
@@ -58,3 +62,46 @@ func (r fifo) Run(ctx context.Context, params StageParams) {
 		}
 	}
 }
+
+// fixedWorkerPool spins up a preconfigured number of workers and distributes incoming
+// payloads among them 
+type fixedWorkerPool struct {
+	fifos []StageRunner
+}
+
+// FixedWorkerPool returns a StageRunner that spins up a pool containing
+// numOfWorkers to process incoming payloads in parallel and emit their outputs
+// to the next stage.
+func FixedWorkerPool(proc Processor, numOfWorkers int) StageRunner {
+	if numOfWorkers <= 0 {
+		panic("FixedWorkerPool: numOfWorkers must be > 0")
+	}
+
+	fifos := make([]StageRunner, numOfWorkers)
+	for i := 0; i < numOfWorkers; i++ {
+		fifos[i] = FIFO(proc)
+	}
+
+	return &fixedWorkerPool{
+		fifos: fifos,
+	}
+}
+
+// Run implements the StageRunner interface.
+func (r *fixedWorkerPool) Run(ctx context.Context, params StageParams) {
+	var wg sync.WaitGroup
+
+	// Spin up each worker in the pool and wait for them to complete / return.
+	for i := 0; i < len(r.fifos); i++ {
+		wg.Add(1)
+
+		go func(fifoIndex int) {
+			r.fifos[fifoIndex].Run(ctx, params)
+
+			wg.Done()
+		}(i)
+	}
+
+	wg.Wait()
+}
+
