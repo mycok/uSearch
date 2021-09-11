@@ -2,6 +2,7 @@ package pipeline_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -22,6 +23,7 @@ func Test(t *testing.T) {
 
 func (s *PipelineTestSuite) TestDataFlow(c *check.C) {
 	stages := make([]pipeline.StageRunner, 10)
+
 	for i := 0; i < len(stages); i++ {
 		stages[i] = testStage{c: c}
 	}
@@ -35,6 +37,28 @@ func (s *PipelineTestSuite) TestDataFlow(c *check.C) {
 	c.Assert(err, check.IsNil)
 	c.Assert(sink.data, check.DeepEquals, src.data)
 	assertAllProcessed(c, src.data)
+}
+
+func (s *PipelineTestSuite) TestProcessorErrHandling(c *check.C) {
+	expErr := errors.New("some error")
+	stages := make([]pipeline.StageRunner, 10)
+
+	for i := 0; i < len(stages); i++ {
+		var err error
+		if i == 5 {
+			err = expErr
+		}
+
+		stages[i] = testStage{c: c, err: err}
+	}
+
+	src := &sourceStab{data: stringPayloads(3)}
+	sink := new(sinkStub)
+
+	p := pipeline.New(stages...)
+	err := p.Process(context.TODO(), src, sink)
+
+	c.Assert(err, check.ErrorMatches, "(?s).*some error.*")
 }
 
 // Test setup helpers
