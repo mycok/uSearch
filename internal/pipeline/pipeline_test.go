@@ -89,6 +89,21 @@ func (s *PipelineTestSuite) TestSinkErrHandling(c *check.C) {
 	c.Assert(err, check.ErrorMatches,  "(?s).*pipeline sink: some error.*")
 }
 
+func (s *PipelineTestSuite) TestPayloadDrop(c *check.C) {
+	src := &sourceStab{data: stringPayloads(3)}
+	sink := new(sinkStub)
+
+	p := pipeline.New(testStage{
+		c: c,
+		dropPayloads: true, 
+	})
+	err := p.Process(context.TODO(), src, sink)
+
+	c.Assert(err, check.IsNil)
+	c.Assert(sink.data, check.HasLen, 0, check.Commentf("expected all payloads to be dropped by the stage processor"))
+	assertAllProcessed(c, src.data)
+}
+
 // Test setup helpers
 func assertAllProcessed(c *check.C, payloads []pipeline.Payload) {
 	for i, p := range payloads {
