@@ -66,7 +66,7 @@ func (s *PipelineTestSuite) TestSourceErrHandling(c *check.C) {
 	// Pass a source with an error and check that it's returned by the pipeline process
 	// method by reading from the error buffered channel. 
 	src := &sourceStab{
-		data: stringPayloads(3),
+		data: stringPayloads(2),
 		err: processErr,
 	}
 
@@ -76,6 +76,17 @@ func (s *PipelineTestSuite) TestSourceErrHandling(c *check.C) {
 	err := p.Process(context.TODO(), src, sink)
 
 	c.Assert(err, check.ErrorMatches, "(?s).*pipeline source: some error.*")
+}
+
+func (s *PipelineTestSuite) TestSinkErrHandling(c *check.C) {
+	processErr := errors.New("some error")
+	src := &sourceStab{data: stringPayloads(1)}
+	sink := &sinkStub{err: processErr}
+
+	p := pipeline.New(testStage{c: c})
+	err := p.Process(context.TODO(), src, sink)
+
+	c.Assert(err, check.ErrorMatches,  "(?s).*pipeline sink: some error.*")
 }
 
 // Test setup helpers
