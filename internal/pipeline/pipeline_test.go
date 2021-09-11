@@ -23,7 +23,6 @@ func Test(t *testing.T) {
 
 func (s *PipelineTestSuite) TestDataFlow(c *check.C) {
 	stages := make([]pipeline.StageRunner, 10)
-
 	for i := 0; i < len(stages); i++ {
 		stages[i] = testStage{c: c}
 	}
@@ -40,15 +39,16 @@ func (s *PipelineTestSuite) TestDataFlow(c *check.C) {
 }
 
 func (s *PipelineTestSuite) TestProcessorErrHandling(c *check.C) {
-	expErr := errors.New("some error")
+	processErr := errors.New("some error")
 	stages := make([]pipeline.StageRunner, 10)
 
 	for i := 0; i < len(stages); i++ {
 		var err error
 		if i == 5 {
-			err = expErr
+			err = processErr
 		}
-
+		// Pass a stage runner with an error and check that it's returned by the pipeline process
+		// method by reading from the error buffered channel. 
 		stages[i] = testStage{c: c, err: err}
 	}
 
@@ -59,6 +59,23 @@ func (s *PipelineTestSuite) TestProcessorErrHandling(c *check.C) {
 	err := p.Process(context.TODO(), src, sink)
 
 	c.Assert(err, check.ErrorMatches, "(?s).*some error.*")
+}
+
+func (s *PipelineTestSuite) TestSourceErrHandling(c *check.C) {
+	processErr := errors.New("some error")
+	// Pass a source with an error and check that it's returned by the pipeline process
+	// method by reading from the error buffered channel. 
+	src := &sourceStab{
+		data: stringPayloads(3),
+		err: processErr,
+	}
+
+	sink := new(sinkStub)
+
+	p := pipeline.New(testStage{c: c})
+	err := p.Process(context.TODO(), src, sink)
+
+	c.Assert(err, check.ErrorMatches, "(?s).*pipeline source: some error.*")
 }
 
 // Test setup helpers
