@@ -3,6 +3,8 @@ package pipeline_test
 import (
 	"context"
 	"fmt"
+	"time"
+
 	// "sort"
 	// "time"
 
@@ -32,6 +34,50 @@ func (s *StageTestSuite) TestFIFO(c *check.C) {
 	c.Assert(err, check.IsNil)
 	c.Assert(sink.data, check.DeepEquals, src.data)
 	assertAllProcessed(c, src.data)
+}
+
+func (s *StageTestSuite) TestFixedWorkerPool(c *check.C) {
+	numOfWorkers := 5
+	syncCh := make(chan struct{})
+	rendevousCh := make(chan struct{})
+	doneCh := make(chan struct{})
+
+	proc := pipeline.ProcessorFunc(func(c context.Context, p pipeline.Payload) (pipeline.Payload, error) {
+		// Signal that we have reached the sync point and wait for the
+		// green light to proceed by the test code.
+		syncCh <- struct{}{}
+		<-rendevousCh
+
+		return nil, nil
+	})
+
+	src := &sourceStab{data: stringPayloads(numOfWorkers)}
+	p := pipeline.New(pipeline.FixedWorkerPool(proc, numOfWorkers))
+
+	go func() {
+		err := p.Process(context.TODO(), src, nil)
+
+		c.Assert(err, check.IsNil)
+		close(doneCh)
+	}()
+
+	// Wait for all workers to reach sync point. This means that each input
+	// from the source is currently handled by a worker in parallel.
+	for i := 0; i < numOfWorkers; i++ {
+		select {
+		case <-syncCh:
+		case <-time.After(10 * time.Second):
+			c.Fatalf("timed out waiting for worker %d to reach sync point", i)
+		}
+	}
+
+	// Allow workers to proceed and wait for the pipeline to complete.
+	close(rendevousCh)
+	select {
+	case <-doneCh:
+	case <-time.After(10 * time.Second):
+		c.Fatal("timed out waiting for pipeline to complete")
+	}
 }
 
 // Test suite setup helpers.

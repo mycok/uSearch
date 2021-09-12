@@ -74,7 +74,7 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 		stageChs[i] = make(chan Payload)
 	}
 
-	// Start a worker / go-routine for each stage.
+	// Main-loop: Start a worker / go-routine for each stage.
 	for i := 0; i < len(p.stages); i++ {
 		wg.Add(1)
 
@@ -87,7 +87,11 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 			})
 
 			// Once the run method for a particular stage returns, we signal the next stage that
-			 // no more data is available by closing the output channel.
+			// no more data is available by closing the output channel.
+
+			// Note: Run method for a particular stage will only return if it's input channel has
+			// been closed by the previous stage or closed by the sourceWorker in case it's the first
+			// stage to run in the pipeline.
 			close(stageChs[stageIndex+1])
 
 			wg.Done()
@@ -95,13 +99,16 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 	}
 
 	// Start source and sink workers / go-routines.
+	// Note: all the following goroutines start after the main-loop is done.
 	wg.Add(2)
 
 	go func() {
 		sourceWorker(processCtx, src, stageChs[0], errCh)
 
 		// Once the sourceWorker runs out of data or ctx is cancelled, sourceWorker returns and
-		// we signal the next stage that no more data is available by closing the output channel.
+		// it signals the stage that reads from it's channel [stageChs[0]] that no more data is
+		 // available by closing the output channel. This will start a chain of channel closures
+		 // from the respective stages since there will be no more new data to be read.
 		close(stageChs[0])
 
 		wg.Done()
@@ -113,7 +120,8 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 		wg.Done()
 	}()
 
-	// Close the error channel once all workers exit / return.
+	// Block the method from returning until all goroutines / workers exit / return, then
+	// close the error channel and cancel the provided context.
 	go func() {
 		wg.Wait()
 
@@ -121,7 +129,11 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 		ctxCancelFn()
 	}()
 
-	// Collect any emitted errors and wrap them in a multi-error.
+	// Note: The following for loop keeps running while the other goroutines are busy. it keeps trying to
+	// read from the errCh for any emitted errors by any of the currently running processes.
+	// if an error is read from the errCh, the err is wrapped as a multierror and appended to
+	// err variable and then the provided context is cancelled. this would signal to all running
+	// processes to terminate.
 	var err error
 	for processErr := range errCh {
 		err = multierror.Append(err, processErr)
@@ -160,6 +172,9 @@ func sourceWorker(ctx context.Context, src Source, outCh chan<- Payload, errCh c
 // sinkWorker implements a worker that reads Payload instances from an input
 // channel (the output of the last pipeline stage) and passes them to the
 // provided sink.
+
+// Note: sink.Consume implementations are likely to provide functionality for storing the
+// processed payload each time a payload is read from the channel.
 func sinkWorker(ctx context.Context, sink Sink, inCh <-chan Payload, errCh chan<- error) {
 	for {
 		select {
