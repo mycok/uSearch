@@ -14,15 +14,15 @@ import (
 // executed by check testing package.
 var _ = check.Suite(new(CockroachDBTestSuite))
 
+// Register our test suite with [go.test].
+func Test(t *testing.T) {
+	check.TestingT(t)
+}
+
 // CockroachDBTestSuite embeds the BaseSuite type tests methods.
 type CockroachDBTestSuite struct {
 	db *sql.DB
 	graphtests.BaseSuite
-}
-
-// Register our test suite with [go.test].
-func Test(t *testing.T) {
-	check.TestingT(t)
 }
 
 // SetUpSuite initializes and sets up the necessary testing env for the test suite.

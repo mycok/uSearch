@@ -12,13 +12,13 @@ import (
 // executed by check testing package.
 var _ = check.Suite(new(InMemoryDBTestSuite))
 
+func Test(t *testing.T) {
+	check.TestingT(t)
+}
+
 // InMemoryGraphTestSuite embeds the BaseSuite type tests methods.
 type InMemoryDBTestSuite struct {
 	graphtests.BaseSuite
-}
-
-func Test(t *testing.T) {
-	check.TestingT(t)
 }
 
 // SetUpTest runs before each test in the test suite. it's
