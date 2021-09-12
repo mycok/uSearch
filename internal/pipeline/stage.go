@@ -50,10 +50,13 @@ func (r *fifo) Run(ctx context.Context, params StageParams) {
 			if payloadOut == nil {
 				payloadIn.MarkAsProcessed()
 
-				continue
+				continue // Start a new iteration.
 			}
 
 			// Output processed data.
+			// Note: the code in the select block blocks until either context is cancelled by
+			// the user or the output payload is successfully written to the output channel in
+			// which case a new iteration starts.
 			select {
 			case params.Output() <- payloadOut:
 			case <-ctx.Done():
@@ -96,6 +99,9 @@ func (r *fixedWorkerPool) Run(ctx context.Context, params StageParams) {
 	var wg sync.WaitGroup
 
 	// Spin up each worker in the pool and wait for them to complete / return.
+
+	// Note: each worker reads from the same input channel and writes to the same output channel.
+	// payloads are distributed to whichever worker is free and ready to read and process a new payload.
 	for i := 0; i < len(r.fifos); i++ {
 		wg.Add(1)
 
