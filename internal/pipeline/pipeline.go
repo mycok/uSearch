@@ -86,7 +86,8 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 				errCh: errCh,
 			})
 
-			// Signal the next stage that no more data is available by closing the output channel.
+			// Once the run method for a particular stage returns, we signal the next stage that
+			 // no more data is available by closing the output channel.
 			close(stageChs[stageIndex+1])
 
 			wg.Done()
@@ -99,7 +100,8 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 	go func() {
 		sourceWorker(processCtx, src, stageChs[0], errCh)
 
-		// Signal the next stage that no more data is available by closing the output channel.
+		// Once the sourceWorker runs out of data or ctx is cancelled, sourceWorker returns and
+		// we signal the next stage that no more data is available by closing the output channel.
 		close(stageChs[0])
 
 		wg.Done()
@@ -124,6 +126,7 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 	for processErr := range errCh {
 		err = multierror.Append(err, processErr)
 
+		// Cancel the provided context and trigger the shutdown of the entire pipeline.
 		ctxCancelFn()
 	}
 
@@ -145,7 +148,9 @@ func sourceWorker(ctx context.Context, src Source, outCh chan<- Payload, errCh c
 		}
 	}
 
-	// Check for errors.
+	// The following code runs after the loop has terminated either due to the context being cancelled
+	// or src.Next() call returning false.
+	// Check for any errors encountered by the src before allowing the function to return.
 	if err := src.Error(); err != nil {
 		wrappedErr := fmt.Errorf("pipeline source: %w", err)
 		shouldEmitError(wrappedErr, errCh)

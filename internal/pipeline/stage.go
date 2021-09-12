@@ -34,7 +34,7 @@ func (r *fifo) Run(ctx context.Context, params StageParams) {
 			return
 		case payloadIn, ok := <-params.Input():
 			if !ok {
-				return // No more data available.
+				return // No more data available, channel is closed.
 			}
 
 			payloadOut, err := r.proc.Process(ctx, payloadIn)

@@ -15,11 +15,11 @@ import (
 // executed by check testing package.
 var _ = check.Suite(new(PipelineTestSuite))
 
-type PipelineTestSuite struct {}
-
 func Test(t *testing.T) {
 	check.TestingT(t)
 }
+
+type PipelineTestSuite struct {}
 
 func (s *PipelineTestSuite) TestDataFlow(c *check.C) {
 	stages := make([]pipeline.StageRunner, 10)
@@ -104,7 +104,7 @@ func (s *PipelineTestSuite) TestPayloadDrop(c *check.C) {
 	assertAllProcessed(c, src.data)
 }
 
-// Test setup helpers
+// Test suite setup helpers.
 func assertAllProcessed(c *check.C, payloads []pipeline.Payload) {
 	for i, p := range payloads {
 		payload := p.(*stringPayload)
