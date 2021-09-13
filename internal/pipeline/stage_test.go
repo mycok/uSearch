@@ -18,7 +18,7 @@ import (
 // executed by check testing package.
 var _ = check.Suite(new(StageTestSuite))
 
-type StageTestSuite struct {}
+type StageTestSuite struct{}
 
 func (s *StageTestSuite) TestFIFO(c *check.C) {
 	stages := make([]pipeline.StageRunner, 10)
@@ -131,7 +131,7 @@ func (s *StageTestSuite) TestDynamicWorkerPool(c *check.C) {
 		c.Fatalf("timed out waiting for pipeline to complete")
 	}
 
-	c.Assert(numOfExcutedProcesses, check.Equals, numOfWorkers * 2)
+	c.Assert(numOfExcutedProcesses, check.Equals, numOfWorkers*2)
 	assertAllProcessed(c, src.data)
 }
 

@@ -1,9 +1,9 @@
 package es
 
 import (
-	"testing"
 	"os"
 	"strings"
+	"testing"
 
 	"github.com/mycok/uSearch/internal/textindexer/index/indextests"
 
@@ -48,4 +48,3 @@ func (s *ElasticsearchTestSuite) SetUpTest(c *check.C) {
 		c.Assert(err, check.IsNil)
 	}
 }
-

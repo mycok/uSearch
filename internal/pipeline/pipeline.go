@@ -10,10 +10,10 @@ import (
 
 // Compile-time check for ensuring workerParams implements StageParams.
 var _ StageParams = (*workerParams)(nil)
- 
+
 type workerParams struct {
 	stage int
-	inCh <-chan Payload
+	inCh  <-chan Payload
 	outCh chan<- Payload
 	errCh chan<- error
 }
@@ -67,8 +67,8 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 	// and the output sink. The output of the i_th stage is used as an input
 	// for the i+1_th stage. We need to allocate one extra channel than the
 	// number of stages so we can also wire the source/sink.
-	stageChs := make([]chan Payload, len(p.stages) + 1)
-	errCh := make(chan error, len(p.stages) + 2)
+	stageChs := make([]chan Payload, len(p.stages)+1)
+	errCh := make(chan error, len(p.stages)+2)
 
 	for i := 0; i < len(stageChs); i++ {
 		stageChs[i] = make(chan Payload)
@@ -81,7 +81,7 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 		go func(stageIndex int) {
 			p.stages[stageIndex].Run(processCtx, &workerParams{
 				stage: stageIndex,
-				inCh: stageChs[stageIndex],
+				inCh:  stageChs[stageIndex],
 				outCh: stageChs[stageIndex+1],
 				errCh: errCh,
 			})
@@ -107,21 +107,22 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 
 		// Once the sourceWorker runs out of data or ctx is cancelled, sourceWorker returns and
 		// it signals the stage that reads from it's channel [stageChs[0]] that no more data is
-		 // available by closing the output channel. This will start a chain of channel closures
-		 // from the respective stages since there will be no more new data to be read.
+		// available by closing the output channel. This will start a chain of channel closures
+		// from the respective stages since there will be no more new data to be read.
 		close(stageChs[0])
 
 		wg.Done()
 	}()
 
 	go func() {
-		sinkWorker(processCtx, sink, stageChs[len(stageChs) - 1], errCh)
+		sinkWorker(processCtx, sink, stageChs[len(stageChs)-1], errCh)
 
 		wg.Done()
 	}()
 
 	// Block the method from returning until all goroutines / workers exit / return, then
 	// close the error channel and cancel the provided context.
+	// Note: This go-routine / workers serves as a monitor.
 	go func() {
 		wg.Wait()
 
@@ -206,5 +207,3 @@ func shouldEmitError(err error, errCh chan<- error) {
 	default: // errCh is full with other errors and the new err is dropped.
 	}
 }
-
-
