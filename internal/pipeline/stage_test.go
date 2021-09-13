@@ -3,6 +3,7 @@ package pipeline_test
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	// "sort"
@@ -83,6 +84,7 @@ func (s *StageTestSuite) TestFixedWorkerPool(c *check.C) {
 }
 
 func (s *StageTestSuite) TestDynamicWorkerPool(c *check.C) {
+	var numOfExcutedProcesses int
 	numOfWorkers := 5
 	syncCh := make(chan struct{}, numOfWorkers)
 	rendevousCh := make(chan struct{})
@@ -93,6 +95,8 @@ func (s *StageTestSuite) TestDynamicWorkerPool(c *check.C) {
 		// green light to proceed by the test code.
 		syncCh <- struct{}{}
 		<-rendevousCh
+
+		numOfExcutedProcesses++
 
 		return nil, nil
 	})
@@ -127,7 +131,44 @@ func (s *StageTestSuite) TestDynamicWorkerPool(c *check.C) {
 		c.Fatalf("timed out waiting for pipeline to complete")
 	}
 
+	c.Assert(numOfExcutedProcesses, check.Equals, numOfWorkers * 2)
 	assertAllProcessed(c, src.data)
+}
+
+func (s *StageTestSuite) TestBroadcast(c *check.C) {
+	numOfProcs := 3
+	procs := make([]pipeline.Processor, numOfProcs)
+	for i := 0; i < len(procs); i++ {
+		procs[i] = makeMutatingProcessor(i)
+	}
+
+	src := &sourceStab{data: stringPayloads(1)}
+	sink := new(sinkStub)
+
+	p := pipeline.New(pipeline.Broadcast(procs...))
+	err := p.Process(context.TODO(), src, sink)
+
+	c.Assert(err, check.IsNil)
+
+	expectedData := []pipeline.Payload{
+		&stringPayload{val: "0_0", processed: true},
+		&stringPayload{val: "0_1", processed: true},
+		&stringPayload{val: "0_2", processed: true},
+	}
+
+	assertAllProcessed(c, src.data)
+
+	// Processors run as go-routines so outputs will be shuffled. We need
+	// to sort them first so we can check for equality.
+	sort.Slice(expectedData, func(i, j int) bool {
+		return expectedData[i].(*stringPayload).val < expectedData[j].(*stringPayload).val
+	})
+
+	sort.Slice(sink.data, func(i, j int) bool {
+		return sink.data[i].(*stringPayload).val < sink.data[j].(*stringPayload).val
+	})
+
+	c.Assert(sink.data, check.DeepEquals, expectedData)
 }
 
 // Test suite setup helpers.
