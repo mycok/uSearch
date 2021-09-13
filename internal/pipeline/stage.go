@@ -26,7 +26,7 @@ func FIFO(proc Processor) StageRunner {
 }
 
 // Run implements the StageRunner interface.
-// It implements the payload processing loop for a single stage of the pipeline.
+// It implements the payload processing infinite loop for a single stage of the pipeline.
 func (r *fifo) Run(ctx context.Context, params StageParams) {
 	for {
 		select {
@@ -95,6 +95,8 @@ func FixedWorkerPool(proc Processor, numOfWorkers int) StageRunner {
 }
 
 // Run implements the StageRunner interface.
+// It implements the payload processing for-loop that spins up a fixed number of workers / go-routines 
+// for each fifo of []fifos.
 func (r *fixedWorkerPool) Run(ctx context.Context, params StageParams) {
 	var wg sync.WaitGroup
 
@@ -145,7 +147,17 @@ func DynamicWorkerPool(proc Processor, maxNumOfWorkers int) StageRunner {
 	}
 }
 
+// Run implements the StageRunner interface.
+// It implements the payload processing infinite loop that dynamically spins up workers / go-routines
+// for each available token.
 func (r *dynamicWorkerPool) Run(ctx context.Context, params StageParams) {
+
+	// This infinite for loop keeps trying to read from [params.input()] channel.
+	// if a read is successful, the select statement blocks until a token is read from the tokenPool.
+	// for every token read, a go-routine is started that processes and writes the output payload to
+	// the output channel.
+	// When the maxNumOfWorkers is reached, the main loop blocks until a new token is available. This
+	// only happens after any of the initial maxNumOfWorkers go-routines completes / returns.
 	stop:
 		for {
 			select {
@@ -194,7 +206,12 @@ func (r *dynamicWorkerPool) Run(ctx context.Context, params StageParams) {
 			}
 		}
 
-	// Wait for all workers to exit by trying to empty the token pool.
+	// Wait for all workers to exit by trying to empty the token pool. since spinning up of new
+	// workers depends on the presence of a token, draining the token pool of all available tokens
+	// ensures that no more workers / go-routines are spun up and that all active workers / go-routines exit.
+
+	// Note: This loop runs after the main [stop] infinite loop has returned either due to
+	// context cancellation or when the [params.input] channel is closed.
 	for i := 0; i < cap(r.tokenPool); i++ {
 		<-r.tokenPool
 	}
