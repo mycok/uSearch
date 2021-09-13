@@ -19,7 +19,7 @@ func Test(t *testing.T) {
 	check.TestingT(t)
 }
 
-type PipelineTestSuite struct {}
+type PipelineTestSuite struct{}
 
 func (s *PipelineTestSuite) TestDataFlow(c *check.C) {
 	stages := make([]pipeline.StageRunner, 10)
@@ -48,7 +48,7 @@ func (s *PipelineTestSuite) TestProcessorErrHandling(c *check.C) {
 			err = processErr
 		}
 		// Pass a stage runner with an error and check that it's returned by the pipeline process
-		// method by reading from the error buffered channel. 
+		// method by reading from the error buffered channel.
 		stages[i] = testStage{c: c, err: err}
 	}
 
@@ -64,10 +64,10 @@ func (s *PipelineTestSuite) TestProcessorErrHandling(c *check.C) {
 func (s *PipelineTestSuite) TestSourceErrHandling(c *check.C) {
 	processErr := errors.New("some error")
 	// Pass a source with an error and check that it's returned by the pipeline process
-	// method by reading from the error buffered channel. 
+	// method by reading from the error buffered channel.
 	src := &sourceStab{
 		data: stringPayloads(2),
-		err: processErr,
+		err:  processErr,
 	}
 
 	sink := new(sinkStub)
@@ -86,7 +86,7 @@ func (s *PipelineTestSuite) TestSinkErrHandling(c *check.C) {
 	p := pipeline.New(testStage{c: c})
 	err := p.Process(context.TODO(), src, sink)
 
-	c.Assert(err, check.ErrorMatches,  "(?s).*pipeline sink: some error.*")
+	c.Assert(err, check.ErrorMatches, "(?s).*pipeline sink: some error.*")
 }
 
 func (s *PipelineTestSuite) TestPayloadDrop(c *check.C) {
@@ -94,8 +94,8 @@ func (s *PipelineTestSuite) TestPayloadDrop(c *check.C) {
 	sink := new(sinkStub)
 
 	p := pipeline.New(testStage{
-		c: c,
-		dropPayloads: true, 
+		c:            c,
+		dropPayloads: true,
 	})
 	err := p.Process(context.TODO(), src, sink)
 
@@ -113,9 +113,9 @@ func assertAllProcessed(c *check.C, payloads []pipeline.Payload) {
 }
 
 type testStage struct {
-	c *check.C
+	c            *check.C
 	dropPayloads bool
-	err error
+	err          error
 }
 
 func (s testStage) Run(ctx context.Context, params pipeline.StageParams) {
@@ -161,8 +161,8 @@ func (s testStage) Run(ctx context.Context, params pipeline.StageParams) {
 // .......
 type sourceStab struct {
 	index int
-	data []pipeline.Payload
-	err error
+	data  []pipeline.Payload
+	err   error
 }
 
 func (s *sourceStab) Next(ctx context.Context) bool {
@@ -186,7 +186,7 @@ func (s *sourceStab) Error() error {
 // .....
 type sinkStub struct {
 	data []pipeline.Payload
-	err error
+	err  error
 }
 
 func (s *sinkStub) Consume(ctx context.Context, p pipeline.Payload) error {
@@ -198,7 +198,7 @@ func (s *sinkStub) Consume(ctx context.Context, p pipeline.Payload) error {
 // .......
 type stringPayload struct {
 	processed bool
-	val string
+	val       string
 }
 
 func (s *stringPayload) Clone() pipeline.Payload {

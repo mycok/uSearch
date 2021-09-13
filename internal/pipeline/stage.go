@@ -61,17 +61,16 @@ func (r *fifo) Run(ctx context.Context, params StageParams) {
 			case params.Output() <- payloadOut:
 			case <-ctx.Done():
 				return
-			} 
+			}
 		}
 	}
 }
-
 
 // Compile-time check for ensuring fixedWorkerPool implements StageRunner.
 var _ StageRunner = (*fixedWorkerPool)(nil)
 
 // fixedWorkerPool spins up a preconfigured number of workers and distributes incoming
-// payloads among them 
+// payloads among them
 type fixedWorkerPool struct {
 	fifos []StageRunner
 }
@@ -95,7 +94,7 @@ func FixedWorkerPool(proc Processor, numOfWorkers int) StageRunner {
 }
 
 // Run implements the StageRunner interface.
-// It implements the payload processing for-loop that spins up a fixed number of workers / go-routines 
+// It implements the payload processing for-loop that spins up a fixed number of workers / go-routines
 // for each fifo of []fifos.
 func (r *fixedWorkerPool) Run(ctx context.Context, params StageParams) {
 	var wg sync.WaitGroup
@@ -119,12 +118,11 @@ func (r *fixedWorkerPool) Run(ctx context.Context, params StageParams) {
 	wg.Wait()
 }
 
-
 // Compile-time check for ensuring dynamicWorkerPool implements StageRunner.
 var _ StageRunner = (*dynamicWorkerPool)(nil)
 
 type dynamicWorkerPool struct {
-	proc Processor
+	proc      Processor
 	tokenPool chan struct{}
 }
 
@@ -142,7 +140,7 @@ func DynamicWorkerPool(proc Processor, maxNumOfWorkers int) StageRunner {
 	}
 
 	return &dynamicWorkerPool{
-		proc: proc,
+		proc:      proc,
 		tokenPool: tokenPool,
 	}
 }
@@ -158,53 +156,53 @@ func (r *dynamicWorkerPool) Run(ctx context.Context, params StageParams) {
 	// the output channel.
 	// When the maxNumOfWorkers is reached, the main loop blocks until a new token is available. This
 	// only happens after any of the initial maxNumOfWorkers go-routines completes / returns.
-	stop:
-		for {
+stop:
+	for {
+		select {
+		case <-ctx.Done():
+			break stop
+		case payloadIn, ok := <-params.Input():
+			if !ok {
+				break stop
+			}
+
+			var token struct{}
 			select {
+			case token = <-r.tokenPool:
 			case <-ctx.Done():
 				break stop
-			case payloadIn, ok := <-params.Input():
-				if !ok {
-					break stop
-				}
-
-				var token struct{}
-				select {
-				case token = <-r.tokenPool:
-				case <-ctx.Done():
-					break stop
-				}
-
-				go func(payloadIn Payload, token struct{}) {
-					defer func() {
-						r.tokenPool <- token
-					}()
-
-					payloadOut, err := r.proc.Process(ctx, payloadIn)
-					if err != nil {
-						wrappedError := fmt.Errorf("pipeline stage %d: %w", params.StageIndex(), err)
-						shouldEmitError(wrappedError, params.Error())
-
-						return
-					}
-
-					// If the processor did not output a payload for the
-					// next stage there is nothing we need to do.
-					if payloadOut == nil {
-						payloadIn.MarkAsProcessed()
-
-						return // Discard the payload.
-					}
-
-					// Output processed data.
-					select {
-					case params.Output() <- payloadOut:
-					case <-ctx.Done():
-					}
-
-				}(payloadIn, token)
 			}
+
+			go func(payloadIn Payload, token struct{}) {
+				defer func() {
+					r.tokenPool <- token
+				}()
+
+				payloadOut, err := r.proc.Process(ctx, payloadIn)
+				if err != nil {
+					wrappedError := fmt.Errorf("pipeline stage %d: %w", params.StageIndex(), err)
+					shouldEmitError(wrappedError, params.Error())
+
+					return
+				}
+
+				// If the processor did not output a payload for the
+				// next stage there is nothing we need to do.
+				if payloadOut == nil {
+					payloadIn.MarkAsProcessed()
+
+					return // Discard the payload.
+				}
+
+				// Output processed data.
+				select {
+				case params.Output() <- payloadOut:
+				case <-ctx.Done():
+				}
+
+			}(payloadIn, token)
 		}
+	}
 
 	// Wait for all workers to exit by trying to empty the token pool. since spinning up of new
 	// workers depends on the presence of a token, draining the token pool of all available tokens
@@ -216,7 +214,6 @@ func (r *dynamicWorkerPool) Run(ctx context.Context, params StageParams) {
 		<-r.tokenPool
 	}
 }
-
 
 // Compile-time check for ensuring fixedWorkerPool implements StageRunner.
 var _ StageRunner = (*broadcast)(nil)
@@ -250,7 +247,7 @@ func Broadcast(procs ...Processor) StageRunner {
 // will output it's payout first regardless of it's position in the entire process.
 func (r *broadcast) Run(ctx context.Context, params StageParams) {
 	var (
-		wg sync.WaitGroup
+		wg    sync.WaitGroup
 		inChs = make([]chan Payload, len(r.fifos))
 	)
 
@@ -268,7 +265,7 @@ func (r *broadcast) Run(ctx context.Context, params StageParams) {
 				outCh: params.Output(),
 				errCh: params.Error(),
 			}
-			
+
 			r.fifos[fifoIndex].Run(ctx, fifoParams)
 
 			wg.Done()
@@ -277,43 +274,43 @@ func (r *broadcast) Run(ctx context.Context, params StageParams) {
 
 	// This is the main loop and it runs constantly until the [params.input] channel
 	// is closed or the context gets cancelled.
-	done:
-		for {
-			// Read incoming payloads then pass them to each FIFO instance.
-			// The select block of code blocks until either the payload is read from
-			// the input channel or the context gets cancelled.
-			select {
-			case <-ctx.Done():
+done:
+	for {
+		// Read incoming payloads then pass them to each FIFO instance.
+		// The select block of code blocks until either the payload is read from
+		// the input channel or the context gets cancelled.
+		select {
+		case <-ctx.Done():
+			break done
+		case payload, ok := <-params.Input():
+			if !ok {
 				break done
-			case payload, ok := <-params.Input():
-				if !ok {
+			}
+
+			// This loop writes payloads to each dedicated FIFO input channel.
+			// After writing payloads to all FIFO input channels, a new iteration
+			// of the main begins.
+			for i := len(r.fifos) - 1; i >= 0; i-- {
+				// Since each FIFO might modify the payload, in order
+				// avoid data races we need to make a copy of
+				// the payload for all FIFOs except the first.
+				var fifoPayload = payload
+				if i != 0 {
+					fifoPayload = payload.Clone()
+				}
+
+				select {
+				case <-ctx.Done():
 					break done
+				case inChs[i] <- fifoPayload:
 				}
 
-				// This loop writes payloads to each dedicated FIFO input channel.
-				// After writing payloads to all FIFO input channels, a new iteration
-				// of the main begins.
-				for i := len(r.fifos) - 1; i >= 0; i-- {
-					// Since each FIFO might modify the payload, in order
-					// avoid data races we need to make a copy of
-					// the payload for all FIFOs except the first.
-					var fifoPayload = payload
-					if i != 0 {
-						fifoPayload = payload.Clone()
-					}
-
-					select {
-					case <-ctx.Done():
-						break done
-					case inChs[i] <- fifoPayload:
-					}
-
-				}
 			}
 		}
+	}
 
 	// This loop runs after the main loop has exited.
-	// Signal each of the fifo stage runner instances to shut down by closing their 
+	// Signal each of the fifo stage runner instances to shut down by closing their
 	// dedicated input channels.
 	for _, ch := range inChs {
 		close(ch)
@@ -322,4 +319,3 @@ func (r *broadcast) Run(ctx context.Context, params StageParams) {
 	// Wait for all the go-routines to exit before allowing the Run method to return.
 	wg.Wait()
 }
-
