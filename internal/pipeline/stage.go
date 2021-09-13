@@ -242,6 +242,12 @@ func Broadcast(procs ...Processor) StageRunner {
 	}
 }
 
+// Run implements the StageRunner interface.
+// It spins up go-routines / workers for each fifo stage runner and passes it it's
+// own input channel and a shared output channel.
+// Note: output data from the run operation may be out of order / shuffled since no go-routine
+// has to wait for the previous one to access the payload input. This means that the fastest go-routine
+// will output it's payout first regardless of it's position in the entire process.
 func (r *broadcast) Run(ctx context.Context, params StageParams) {
 	var (
 		wg sync.WaitGroup
