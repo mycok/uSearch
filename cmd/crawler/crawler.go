@@ -30,6 +30,7 @@ func (ls *linkSource) Payload() pipeline.Payload {
 	// remaining payload fields are populated during the pipeline processing phase.
 	link := ls.linkIt.Link()
 	p := payloadPool.Get().(*crawlerPayload)
+
 	p.LinkID = link.ID
 	p.URL = link.URL
 	p.RetrievedAt = link.RetrievedAt
@@ -37,14 +38,22 @@ func (ls *linkSource) Payload() pipeline.Payload {
 	return p
 }
 
-// Compile-time check for ensuring linkSource implements pipeline.Sink.
+// Compile-time check for ensuring sink implements pipeline.Sink.
 var _ pipeline.Sink = (*sink)(nil)
 
-type sink struct {}
+type sink struct {
+	count int
+}
 
 // Consume ignores the provided payload and returns nil. The [pipeline.Process] method
 // call [Payload.MarkAsProcessed] method which reset the payload values and adds it to the payloadPool
 // for future re-use.
-func (cs *sink) Consume(context.Context, pipeline.Payload) error {
+func (s *sink) Consume(context.Context, pipeline.Payload) error {
+	s.count++
+
 	return nil
+}
+
+func (s *sink) getCount() int {
+	return s.count / 2
 }
