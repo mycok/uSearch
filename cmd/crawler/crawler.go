@@ -36,3 +36,15 @@ func (ls *linkSource) Payload() pipeline.Payload {
 
 	return p
 }
+
+// Compile-time check for ensuring linkSource implements pipeline.Sink.
+var _ pipeline.Sink = (*sink)(nil)
+
+type sink struct {}
+
+// Consume ignores the provided payload and returns nil. The [pipeline.Process] method
+// call [Payload.MarkAsProcessed] method which reset the payload values and adds it to the payloadPool
+// for future re-use.
+func (cs *sink) Consume(context.Context, pipeline.Payload) error {
+	return nil
+}
