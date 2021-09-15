@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	// Compile-time check for ensuring that crawlerPayload implements pipeline.Payload.
 	_ pipeline.Payload = (*crawlerPayload)(nil)
 
 	payloadPool = sync.Pool{

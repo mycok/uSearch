@@ -49,7 +49,7 @@ type Config struct {
 	PrivateNetworkDetector PrivateNetworkDetector
 	// A URLGetter instance for fetching links.
 	URLGetter URLGetter
-	// A GraphUpdater instance for up-serting new links to the link graph.
+	// A GraphUpdater instance for up-serting new links and edges into the link graph.
 	Graph MiniGraph
 	// A TextIndexer instance for indexing the content of each retrieved link.
 	Indexer MiniIndexer

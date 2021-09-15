@@ -50,11 +50,12 @@ func (s *InMemoryGraph) UpsertLink(link *graph.Link) error {
 	// this into an update and point the link ID to the existing link.
 	if existing := s.linkURLIndex[link.URL]; existing != nil {
 		link.ID = existing.ID
-		originalTs := existing.RetrievedAt
+		originalTimestamp := existing.RetrievedAt
 		*existing = *link
 
-		if originalTs.After(existing.RetrievedAt) {
-			existing.RetrievedAt = originalTs
+		// Note: this time implementation needs refactoring to confirm if it works as intended.
+		if originalTimestamp.After(link.RetrievedAt) {
+			existing.RetrievedAt = originalTimestamp
 		}
 
 		return nil
