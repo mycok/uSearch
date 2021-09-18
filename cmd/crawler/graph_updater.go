@@ -8,7 +8,7 @@ import (
 	"github.com/mycok/uSearch/internal/pipeline"
 )
 
-// Compile-time check for ensuring that graphUpdater implements pipeline.StageRunner.
+// Compile-time check for ensuring that graphUpdater implements pipeline.Processor.
 var _ pipeline.Processor = (*graphUpdater)(nil)
 
 type graphUpdater struct {
@@ -21,7 +21,7 @@ func newGraphUpdater(updater MiniGraph) *graphUpdater {
 	}
 }
 
-func (u *graphUpdater) Process(ctx context.Context, p pipeline.Payload) (pipeline.Payload, error) {
+func (gu *graphUpdater) Process(ctx context.Context, p pipeline.Payload) (pipeline.Payload, error) {
 	payload := p.(*crawlerPayload)
 
 	// We perform an update since it's the same link retrieved from the graphLink store by
@@ -32,7 +32,7 @@ func (u *graphUpdater) Process(ctx context.Context, p pipeline.Payload) (pipelin
 		RetrievedAt: time.Now(),
 	}
 
-	if err := u.updater.UpsertLink(srcLink); err != nil {
+	if err := gu.updater.UpsertLink(srcLink); err != nil {
 		return nil, err
 	}
 
@@ -40,7 +40,7 @@ func (u *graphUpdater) Process(ctx context.Context, p pipeline.Payload) (pipelin
 	for _, destLink := range payload.NoFollowLinks {
 		dest := &graph.Link{URL: destLink}
 
-		if err := u.updater.UpsertLink(dest); err != nil {
+		if err := gu.updater.UpsertLink(dest); err != nil {
 			return nil, err
 		}
 	}
@@ -52,17 +52,17 @@ func (u *graphUpdater) Process(ctx context.Context, p pipeline.Payload) (pipelin
 	for _, destLink := range payload.Links {
 		dest := &graph.Link{URL: destLink}
 
-		if err := u.updater.UpsertLink(dest); err != nil {
+		if err := gu.updater.UpsertLink(dest); err != nil {
 			return nil, err
 		}
 
-		if err := u.updater.UpsertEdge(&graph.Edge{Src: srcLink.ID, Dest: dest.ID}); err != nil {
+		if err := gu.updater.UpsertEdge(&graph.Edge{Src: srcLink.ID, Dest: dest.ID}); err != nil {
 			return nil, err
 		}
 	}
 
 	// Drop any stale edges that were not updated during the edge upserting operation.
-	if err := u.updater.RemoveStaleEdges(srcLink.ID, edgesOlderThan); err != nil {
+	if err := gu.updater.RemoveStaleEdges(srcLink.ID, edgesOlderThan); err != nil {
 		return nil, err
 	}
 
