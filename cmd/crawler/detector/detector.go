@@ -16,7 +16,7 @@ var defaultPrivateCIDRs = []string{
 	// Misc.
 	"0.0.0.0/8", // All IP addresses on local machine.
 	"255.255.255.255/32", // Broadcast address for the current network.
-	"fc00::17", // IPv6 unique local addr.
+	"fc00::/7", // IPv6 unique local addr.
 }
 
 // Detector checks whether a host name resolves to a private network address.
