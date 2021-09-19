@@ -56,7 +56,7 @@ func (s *DetectorTestSuite) TestIpv4(c *check.C) {
 		},
 	}
 
-	det, err := detector.NewDetector()
+	det, err := detector.New()
 	c.Assert(err, check.IsNil)
 
 	for specIndex, spec := range specs {

@@ -1,6 +1,14 @@
 package detector
 
-import "net"
+import (
+	"net"
+
+	"github.com/mycok/uSearch/cmd/crawler"
+)
+
+// Compile-time check for ensuring that Detector implements crawler.Detector.
+var _ crawler.PrivateNetworkDetector = (*Detector)(nil)
+
 
 var defaultPrivateCIDRs = []string{
 	// Loopback.
@@ -27,7 +35,7 @@ type Detector struct {
 // NewDetector returns a new Detector instance which is initialized with the
 // default list of IPv4/IPv6 CIDR blocks that correspond to private networks
 // according to RFC1918.
-func NewDetector() (*Detector, error) {
+func New() (*Detector, error) {
 	return NewDetectorFromCIDRs(defaultPrivateCIDRs...)
 }
 
