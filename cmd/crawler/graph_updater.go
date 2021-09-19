@@ -22,6 +22,7 @@ func newGraphUpdater(updater MiniGraph) *graphUpdater {
 }
 
 func (gu *graphUpdater) Process(ctx context.Context, p pipeline.Payload) (pipeline.Payload, error) {
+	// Type assert / cast the received payload to the crawlerPayload type.
 	payload := p.(*crawlerPayload)
 
 	// We perform an update since it's the same link retrieved from the graphLink store by

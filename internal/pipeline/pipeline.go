@@ -91,7 +91,9 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 
 			// Note: Run method for a particular stage will only return if it's input channel has
 			// been closed by the previous stage or closed by the sourceWorker in case it's the first
-			// stage to run in the pipeline.
+			// stage to run in the pipeline or when the stage's Process method returns an error which causes
+			// it to return prematurely. It's also important to note that any return from any stages's Run method
+			// will trigger a chain of returns for all the other stages which will in turn cause the pipeline to exit.
 			close(stageChs[stageIndex+1])
 
 			wg.Done()

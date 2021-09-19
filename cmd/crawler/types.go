@@ -18,7 +18,7 @@ type URLGetter interface {
 // PrivateNetworkDetector is implemented by objects that can detect whether a
 // host resolves to a private network address.
 type PrivateNetworkDetector interface {
-	IsPrivate(host string) (bool, error)
+	IsPrivate(address string) (bool, error)
 }
 
 // MiniGraph is implemented by objects that can upsert links and edges into a link
