@@ -86,7 +86,7 @@ func (s *LinkFetcherTestSuite) TestLinkFetcherWithUrlFromAPrivateNet(c *check.C)
 // Test helpers
 func (s *LinkFetcherTestSuite) fetchLink(c *check.C, urlStr string) *crawlerPayload {
 	p := &crawlerPayload{URL: urlStr}
-	output, err := NewLinkFetcher(s.urlGetter, s.privateNetDetector).Process(context.TODO(), p)
+	output, err := newLinkFetcher(s.urlGetter, s.privateNetDetector).Process(context.TODO(), p)
 	c.Assert(err, check.IsNil)
 
 	if output != nil {

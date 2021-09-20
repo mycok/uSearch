@@ -10,10 +10,10 @@ import (
 	"github.com/mycok/uSearch/internal/pipeline"
 )
 
-var exclusionRegex = regexp.MustCompile(`(?i)\.(?:jpg|jpeg|png|gif|ico|css|js)$`)
-
 // Compile-time check for ensuring linkFetcher implements pipeline.Processor.
 var _ pipeline.Processor = (*linkFetcher)(nil)
+
+var exclusionRegex = regexp.MustCompile(`(?i)\.(?:jpg|jpeg|png|gif|ico|css|js)$`)
 
 // linkFetcher serves as the first stage of the crawler pipeline. it operates
 // on payload values emitted by the input source and attempts to retrieve the contents
@@ -26,7 +26,7 @@ type linkFetcher struct {
 }
 
 // NewLinkFetcher initializes and returns a new instance of linkFetcher.
-func NewLinkFetcher(urlGetter URLGetter, netDetector PrivateNetworkDetector) *linkFetcher {
+func newLinkFetcher(urlGetter URLGetter, netDetector PrivateNetworkDetector) *linkFetcher {
 	return &linkFetcher{
 		urlGetter: urlGetter,
 		netDetector: netDetector,
@@ -45,7 +45,7 @@ func (lf *linkFetcher) Process(ctx context.Context, p pipeline.Payload) (pipelin
 
 	// Never crawl links in private networks (e.g. link-local addresses).
 	// it is a security risk!.
-	if private, err := lf.isPrivate(payload.URL); err != nil || private {
+	if isPrivate, err := lf.isPrivate(payload.URL); err != nil || isPrivate {
 		return nil, nil
 	}
 
