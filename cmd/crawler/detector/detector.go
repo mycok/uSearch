@@ -9,7 +9,6 @@ import (
 // Compile-time check for ensuring that Detector implements crawler.Detector.
 var _ crawler.PrivateNetworkDetector = (*Detector)(nil)
 
-
 var defaultPrivateCIDRs = []string{
 	// Loopback.
 	"127.0.0.0/8",
@@ -22,9 +21,9 @@ var defaultPrivateCIDRs = []string{
 	"169.254.0.0/16",
 	"fe80::/10",
 	// Misc.
-	"0.0.0.0/8", // All IP addresses on local machine.
+	"0.0.0.0/8",          // All IP addresses on local machine.
 	"255.255.255.255/32", // Broadcast address for the current network.
-	"fc00::/7", // IPv6 unique local addr.
+	"fc00::/7",           // IPv6 unique local addr.
 }
 
 // Detector checks whether a host name resolves to a private network address.

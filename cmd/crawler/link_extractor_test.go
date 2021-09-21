@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/url"
 	"sort"
-	// "strings"
 
 	"github.com/mycok/uSearch/cmd/crawler/mocks"
 
@@ -19,7 +18,7 @@ var (
 	_ = check.Suite(new(ResolverURLTestSuite))
 )
 
-type ResolverURLTestSuite struct {}
+type ResolverURLTestSuite struct{}
 
 func (s *ResolverURLTestSuite) TestResolveAbsoluteURL(c *check.C) {
 	assertResolvedURL(
@@ -84,7 +83,6 @@ func (s *ResolverURLTestSuite) TestResolveDoubleSlashURL(c *check.C) {
 		"https://www.myshop.com/users/",
 		"//www.auth.com/users",
 		"https://www.auth.com/users",
-
 	)
 
 	assertResolvedURL(
@@ -262,5 +260,3 @@ func (s *LinkExtractorTestSuite) assertExtractedLinks(c *check.C, url, content s
 	c.Assert(p.Links, check.DeepEquals, expectedLinks)
 	c.Assert(p.NoFollowLinks, check.DeepEquals, expectedNoFollowLinks)
 }
-
-

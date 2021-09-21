@@ -27,6 +27,8 @@ func newLinkExtractor(netDetector PrivateNetworkDetector) *linkExtractor {
 	return &linkExtractor{netDetector: netDetector}
 }
 
+// Process parses the [crawlerPayload.RawContent] data and extracts both valid absolute and relative paths and appends
+// them to the [crawlerPayload.Links] and [crawlerPayload.NoFollowLinks] fields.
 func (le *linkExtractor) Process(ctx context.Context, p pipeline.Payload) (pipeline.Payload, error) {
 	payload := p.(*crawlerPayload)
 	// Generate a fully qualified link to use as a base URL for all relative links.
@@ -103,7 +105,7 @@ func (le *linkExtractor) shouldRetainUrlLink(srcHost string, urlLink *url.URL) b
 }
 
 func checkAndAddtrailingSlash(s string) string {
-	if s[len(s) - 1] != '/' {
+	if s[len(s)-1] != '/' {
 		return s + "/"
 	}
 
@@ -120,7 +122,7 @@ func checkAndAddtrailingSlash(s string) string {
 // If the target URL cannot be parsed, an nil URL will be returned.
 func resolveToAbsoluteURL(relativeTo *url.URL, target string) *url.URL {
 	tLen := len(target)
-	if tLen == 0 { 
+	if tLen == 0 {
 		return nil
 	}
 
