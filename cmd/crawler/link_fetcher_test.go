@@ -17,7 +17,7 @@ import (
 var _ = check.Suite(new(LinkFetcherTestSuite))
 
 type LinkFetcherTestSuite struct {
-	urlGetter *mocks.MockURLGetter
+	urlGetter          *mocks.MockURLGetter
 	privateNetDetector *mocks.MockPrivateNetworkDetector
 }
 
@@ -36,7 +36,7 @@ func (s *LinkFetcherTestSuite) TestLinkFetcher(c *check.C) {
 	s.privateNetDetector.EXPECT().IsPrivate("example.com").Return(false, nil)
 	s.urlGetter.EXPECT().Get("http://example.com/index.html").Return(
 		makeResponse(200, "yea!, test passed", "application/xhtml"),
-		 nil,
+		nil,
 	)
 
 	p := s.fetchLink(c, "http://example.com/index.html")
@@ -47,7 +47,7 @@ func (s *LinkFetcherTestSuite) TestLinkFetcherForLinkWithPortNumber(c *check.C) 
 	s.privateNetDetector.EXPECT().IsPrivate("example.com").Return(false, nil)
 	s.urlGetter.EXPECT().Get("http://example.com:3456").Return(
 		makeResponse(200, "hello", "application/xhtml"),
-		 nil,
+		nil,
 	)
 
 	p := s.fetchLink(c, "http://example.com/3456")
@@ -58,7 +58,7 @@ func (s *LinkFetcherTestSuite) TestLinkFetcherWithWrongStatusCode(c *check.C) {
 	s.privateNetDetector.EXPECT().IsPrivate("example.com").Return(false, nil)
 	s.urlGetter.EXPECT().Get("http://example.com/index.html").Return(
 		makeResponse(400, `{"error": "something went wrong"}`, "application/json"),
-		 nil,
+		nil,
 	)
 
 	p := s.fetchLink(c, "http://example.com/index.html")
@@ -69,7 +69,7 @@ func (s *LinkFetcherTestSuite) TestLinkFetcherWithNonHTMLContentType(c *check.C)
 	s.privateNetDetector.EXPECT().IsPrivate("example.com").Return(false, nil)
 	s.urlGetter.EXPECT().Get("http://example.com/users").Return(
 		makeResponse(200, `{"users": "[]"}`, "application/json"),
-		 nil,
+		nil,
 	)
 
 	p := s.fetchLink(c, "http://example.com/users")

@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 	"net/url"
-	"strings"
 	"regexp"
+	"strings"
 
 	"github.com/mycok/uSearch/internal/pipeline"
 )
@@ -21,18 +21,17 @@ var exclusionRegex = regexp.MustCompile(`(?i)\.(?:jpg|jpeg|png|gif|ico|css|js)$`
 // The successful retrieved link contents are stored within the payload's [RawContent] field
 // and made available to the following stage of the pipeline.
 type linkFetcher struct {
-	urlGetter URLGetter // This object provides the required implementation for performing HTTP GET requests.
+	urlGetter   URLGetter              // This object provides the required implementation for performing HTTP GET requests.
 	netDetector PrivateNetworkDetector // This object is used to filter out links that belong to private networks.
 }
 
 // NewLinkFetcher initializes and returns a new instance of linkFetcher.
 func newLinkFetcher(urlGetter URLGetter, netDetector PrivateNetworkDetector) *linkFetcher {
 	return &linkFetcher{
-		urlGetter: urlGetter,
+		urlGetter:   urlGetter,
 		netDetector: netDetector,
 	}
 }
-
 
 func (lf *linkFetcher) Process(ctx context.Context, p pipeline.Payload) (pipeline.Payload, error) {
 	// Type assert / cast the received payload to the crawlerPayload type.
@@ -81,6 +80,5 @@ func (lf *linkFetcher) isPrivate(urlStr string) (bool, error) {
 	}
 
 	return lf.netDetector.IsPrivate(u.Hostname())
-
 
 }
