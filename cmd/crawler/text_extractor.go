@@ -44,12 +44,12 @@ func (te *textExtractor) Process(ctx context.Context, p pipeline.Payload) (pipel
 
 	if titleMatch := titleRegex.FindStringSubmatch(payload.RawContent.String()); len(titleMatch) == 2 {
 		payload.Title = strings.TrimSpace(html.UnescapeString(repeatedSpaceRegex.ReplaceAllString(
-			policy.Sanitize(titleMatch[1]), "",
+			policy.Sanitize(titleMatch[1]), " ",
 		)))
 	}
 
 	payload.TextContent = strings.TrimSpace(html.UnescapeString(repeatedSpaceRegex.ReplaceAllString(
-		policy.SanitizeReader(&payload.RawContent).String(), "",
+		policy.SanitizeReader(&payload.RawContent).String(), " ",
 	)))
 
 	te.policyPool.Put(policy)
