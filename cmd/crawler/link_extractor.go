@@ -90,7 +90,7 @@ func (le *linkExtractor) shouldRetainUrlLink(srcHost string, urlLink *url.URL) b
 	}
 
 	// Skip links that resolve to private networks.
-	if isPrivate, err := le.netDetector.IsPrivate(srcHost); err != nil || isPrivate {
+	if isPrivate, err := le.netDetector.IsPrivate(urlLink.Host); err != nil || isPrivate {
 		return false
 	}
 
