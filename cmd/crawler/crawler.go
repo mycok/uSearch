@@ -3,57 +3,51 @@ package crawler
 import (
 	"context"
 
-	"github.com/mycok/uSearch/internal/graphlink/graph"
 	"github.com/mycok/uSearch/internal/pipeline"
+	"github.com/mycok/uSearch/internal/graphlink/graph"
+
 )
 
-// Compile-time check for ensuring linkSource implements pipeline.Source.
-var _ pipeline.Source = (*linkSource)(nil)
-
-type linkSource struct {
-	linkIt graph.LinkIterator
+// Crawler implements a web-page crawling pipeline consisting of the following
+// stages:
+//
+// - Given a URL, retrieve the web-page contents from the remote server.
+// - Extract and resolve absolute and relative links from the retrieved page.
+// - Extract page title and text content from the retrieved page.
+// - Update the link graph: add new links and create edges between the crawled
+//   page and the links within it.
+// - Index crawled page title and text content.
+type Crawler struct {
+	p *pipeline.Pipeline
 }
 
-// Next returns a boolean to indicate the presence or absence of a next item.
-func (ls *linkSource) Next(context.Context) bool {
-	return ls.linkIt.Next()
+// NewCrawler returns a new crawler instance.
+func NewCrawler(cfg Config) *Crawler {
+	return &Crawler{p: assembleCrawlerPipeline(cfg)}
 }
 
-// Error returns the last encountered error during the subsequent calls to Next.
-func (ls *linkSource) Error() error {
-	return ls.linkIt.Error()
+func assembleCrawlerPipeline(cfg Config) *pipeline.Pipeline {
+	return pipeline.New(
+		pipeline.FixedWorkerPool(
+			newLinkFetcher(cfg.URLGetter, cfg.PrivateNetworkDetector),
+			cfg.NumOfFetchWorkers,
+		),
+		pipeline.FIFO(newLinkExtractor(cfg.PrivateNetworkDetector)),
+		pipeline.FIFO(newTextExtractor()),
+		pipeline.Broadcast(
+			newGraphUpdater(cfg.Graph),
+			newTextIndexer(cfg.Indexer),
+		),
+	)
 }
 
-// Payload returns the next payload after a successful call to Next
-func (ls *linkSource) Payload() pipeline.Payload {
-	// Note: we populate the payload with values from the retrieved link, all the
-	// remaining payload fields are populated during the pipeline processing phase.
-	link := ls.linkIt.Link()
-	p := payloadPool.Get().(*crawlerPayload)
+// Crawl iterates linkIterator and sends each link through the crawler pipeline
+// returning the total count of links that went through the pipeline. Calls to
+// Crawl block until the link iterator is exhausted, an error occurs or the
+// context is cancelled.
+func (c *Crawler) Crawl(ctx context.Context, linkIt graph.LinkIterator) (int, error) {
+	sink := new(sink)
+	err := c.p.Process(ctx, &linkSource{linkIt: linkIt}, sink)
 
-	p.LinkID = link.ID
-	p.URL = link.URL
-	p.RetrievedAt = link.RetrievedAt
-
-	return p
-}
-
-// Compile-time check for ensuring sink implements pipeline.Sink.
-var _ pipeline.Sink = (*sink)(nil)
-
-type sink struct {
-	count int
-}
-
-// Consume ignores the provided payload and returns nil. The [pipeline.Process] method
-// call [Payload.MarkAsProcessed] method which reset the payload values and adds it to the payloadPool
-// for future re-use.
-func (s *sink) Consume(context.Context, pipeline.Payload) error {
-	s.count++
-
-	return nil
-}
-
-func (s *sink) getCount() int {
-	return s.count / 2
+	return sink.getCount(), err
 }
