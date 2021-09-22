@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/mycok/uSearch/internal/textindexer/index"
 	"github.com/mycok/uSearch/internal/pipeline"
+	"github.com/mycok/uSearch/internal/textindexer/index"
 )
 
 // Compile-time check for ensuring textIndexer implements pipeline.Processor.
@@ -35,6 +35,6 @@ func (ti *textIndexer) Process(ctx context.Context, p pipeline.Payload) (pipelin
 	if err := ti.indexer.Index(doc); err != nil {
 		return nil, err
 	}
-	
+
 	return p, nil
 }
