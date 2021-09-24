@@ -3,9 +3,8 @@ package crawler
 import (
 	"context"
 
-	"github.com/mycok/uSearch/internal/pipeline"
 	"github.com/mycok/uSearch/internal/graphlink/graph"
-
+	"github.com/mycok/uSearch/internal/pipeline"
 )
 
 // Crawler implements a web-page crawling pipeline consisting of the following

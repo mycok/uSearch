@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/blevesearch/bleve v1.0.14
+	github.com/blevesearch/mmap-go v1.0.2 // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.0.0-20210823151005-3b1f3aef208c
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/uuid v1.3.0
