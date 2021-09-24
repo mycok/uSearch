@@ -6,7 +6,6 @@ import (
 	"github.com/mycok/uSearch/internal/pipeline"
 )
 
-
 // Compile-time check for ensuring sink implements pipeline.Sink.
 var _ pipeline.Sink = (*sink)(nil)
 
