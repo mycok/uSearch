@@ -6,11 +6,11 @@ import (
 
 // Vertex represents a vertex instance in the Graph.
 type Vertex struct {
-	id string
-	value interface{}
-	active bool
+	id        string
+	value     interface{}
+	active    bool
 	msgQueues [2]message.Queue
-	edges []*Edge
+	edges     []*Edge
 }
 
 // ID returns the Vertex ID.

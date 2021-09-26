@@ -9,7 +9,6 @@ import (
 	check "gopkg.in/check.v1"
 )
 
-
 // Initialize and register an instance of InMemoryMsgQueueTestSuite to be
 // executed by check testing package.
 var _ = check.Suite(new(InMemoryMsgQueueTestSuite))
@@ -40,7 +39,7 @@ func (s *InMemoryMsgQueueTestSuite) TestMsgEnqueueAndDequeue(c *check.C) {
 
 	// We expect the messages to be dequeued in reverse order.
 	var (
-		it = s.q.Messages()
+		it             = s.q.Messages()
 		numofProcessed int
 	)
 
