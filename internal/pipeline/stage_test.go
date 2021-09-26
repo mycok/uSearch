@@ -6,9 +6,6 @@ import (
 	"sort"
 	"time"
 
-	// "sort"
-	// "time"
-
 	"github.com/mycok/uSearch/internal/pipeline"
 
 	check "gopkg.in/check.v1"

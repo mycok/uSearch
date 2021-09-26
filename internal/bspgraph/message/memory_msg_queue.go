@@ -5,7 +5,7 @@ import "sync"
 // inMemoryQueue implements a queue that stores messages in memory. Messages
 // can be enqueued concurrently but the returned iterator is not safe for
 // concurrent access.
-type inMemoryQueue struct {
+type inMemoryMsgQueue struct {
 	mu   sync.Mutex
 	msgs []Message
 	msg  Message
@@ -14,11 +14,11 @@ type inMemoryQueue struct {
 // NewInMemoryQueue creates a new in-memory queue instance. This function can
 // serve as a QueueFactory.
 func NewInMemoryQueue() Queue {
-	return new(inMemoryQueue)
+	return new(inMemoryMsgQueue)
 }
 
 // Enqueue implements Queue.Enqueue.
-func (q *inMemoryQueue) Enqueue(msg Message) error {
+func (q *inMemoryMsgQueue) Enqueue(msg Message) error {
 	q.mu.Lock()
 
 	q.msgs = append(q.msgs, msg)
@@ -29,7 +29,7 @@ func (q *inMemoryQueue) Enqueue(msg Message) error {
 }
 
 // PendingMessages implements Queue.PendingMessages.
-func (q *inMemoryQueue) PendingMessages() bool {
+func (q *inMemoryMsgQueue) PendingMessages() bool {
 	q.mu.Lock()
 
 	pending := len(q.msgs) != 0
@@ -40,7 +40,7 @@ func (q *inMemoryQueue) PendingMessages() bool {
 }
 
 // DiscardMessages implements Queue.DiscardMessages.
-func (q *inMemoryQueue) DiscardMessages() error {
+func (q *inMemoryMsgQueue) DiscardMessages() error {
 	q.mu.Lock()
 
 	q.msgs = q.msgs[:0]
@@ -52,17 +52,17 @@ func (q *inMemoryQueue) DiscardMessages() error {
 }
 
 // Close implements Queue.Close.
-func (q *inMemoryQueue) Close() error {
+func (q *inMemoryMsgQueue) Close() error {
 	return nil
 }
 
 // Messages implements Queue.Messages.
-func (q *inMemoryQueue) Messages() {
+func (q *inMemoryMsgQueue) Messages() Iterator {
 	return q
 }
 
 // Next implements Iterator.Next.
-func (q *inMemoryQueue) Next() bool {
+func (q *inMemoryMsgQueue) Next() bool {
 	q.mu.Lock()
 
 	qMsgsLen := len(q.msgs)
@@ -81,7 +81,7 @@ func (q *inMemoryQueue) Next() bool {
 }
 
 // Message implements Queue.Message.
-func (q *inMemoryQueue) Message() Message {
+func (q *inMemoryMsgQueue) Message() Message {
 	q.mu.Lock()
 
 	msg := q.msg
@@ -92,6 +92,6 @@ func (q *inMemoryQueue) Message() Message {
 }
 
 // Error implements Queue.Error.
-func (*inMemoryQueue) Error() error {
+func (*inMemoryMsgQueue) Error() error {
 	return nil
 }
