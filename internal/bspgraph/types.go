@@ -43,6 +43,7 @@ type Relayer interface {
 // Relayers. If f is a function with the appropriate signature,
 // RelayerFunc(f) is a Relayer that calls f.
 type RelayerFunc func(string, message.Message) error
+
 func (f RelayerFunc) Relay(dest string, msg message.Message) error {
 	return f(dest, msg)
 }
