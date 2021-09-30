@@ -9,16 +9,16 @@ type ExecutorCallbacks struct {
 	// PreStep, if defined, is invoked before running the next superstep.
 	// This is a good place to initialize variables, aggregators etc. that
 	// will be used for the next superstep.
-	PreStep func(context.Context, g *Graph) error
+	PreStep func(ctx context.Context, g *Graph) error
 
 	// PostStep, if defined, is invoked after running a superstep.
-	PostStep func(context.Context, g *Graph, activeInStep int) error
+	PostStep func(ctx context.Context, g *Graph, activeInStep int) error
 
 	// ShouldPostStepKeepRunning, if defined, is invoked after running a superstep
 	// to decide whether the stop condition for terminating the run has
 	// been met. The number of the active vertices in the last step is
 	// passed as the second argument.
-	ShouldPostStepKeepRunning(ctx context.Context, g *Graph, activeInStep int) (bool, error)
+	ShouldPostStepKeepRunning func(ctx context.Context, g *Graph, activeInStep int) (bool, error)
 }
 
 func patchEmptyCallbacks(cb *ExecutorCallbacks) {
@@ -43,7 +43,7 @@ type ExecutorFactory func(*Graph, ExecutorCallbacks) *Executor
 // Users can provide an optional set of callbacks to be executed before and
 // after each super-step.
 type Executor struct {
-	g *Graph
+	g   *Graph
 	cbs ExecutorCallbacks
 }
 
@@ -51,10 +51,10 @@ type Executor struct {
 // provided list of callbacks inside each execution loop.
 func NewExecutor(g *Graph, cbs ExecutorCallbacks) *Executor {
 	patchEmptyCallbacks(&cbs)
-	g.SuperStep = 0
+	g.superstep = 0
 
 	return &Executor{
-		g: g,
+		g:   g,
 		cbs: cbs,
 	}
 }
@@ -66,7 +66,7 @@ func (ex *Executor) RunToCompletion(ctx context.Context) error {
 	return ex.run(ctx, -1)
 }
 
-// RunSteps executes at most numStep supersteps unless the context expires, an
+// RunSteps executes at most numOfSteps supersteps unless the context expires, an
 // error occurs or one of the Pre and or ShouldPostStepKeepRunning callbacks specified at
 // configuration time returns false.
 func (ex *Executor) RunSteps(ctx context.Context, numOfSteps int) error {
@@ -79,21 +79,33 @@ func (ex *Executor) Graph() *Graph {
 }
 
 // Superstep returns the current graph superstep.
-func (ex *Executor) Superstep() int  {
+func (ex *Executor) Superstep() int {
 	return ex.g.Superstep()
 }
 
 func (ex *Executor) run(ctx context.Context, maxSteps int) error {
 	var (
 		activeInStep int
-		err error
-		keepRunning bool
-		cbs = ex.cbs
+		err          error
+		keepRunning  bool
+		cbs          = ex.cbs
 	)
 
 	for ; maxSteps != 0; ex.g.superstep, maxSteps = ex.g.superstep+1, maxSteps-1 {
-		
+		if err = ensureContextNotExpired(ctx); err != nil {
+			break
+		} else if err = cbs.PreStep(ctx, ex.g); err != nil {
+			break
+		} else if activeInStep, err = ex.g.step(); err != nil {
+			break
+		} else if err = cbs.PostStep(ctx, ex.g, activeInStep); err != nil {
+			break
+		} else if keepRunning, err = cbs.ShouldPostStepKeepRunning(ctx, ex.g, activeInStep); !keepRunning || err != nil {
+			break
+		}
 	}
+
+	return err
 }
 
 func ensureContextNotExpired(ctx context.Context) error {

@@ -17,7 +17,7 @@ type Queue interface {
 	// PendingMessages returns true if the queue contains any messages.
 	PendingMessages() bool
 
-	// Flush drops all pending messages from the queue.
+	// DiscardMessages drops all pending messages from the queue.
 	DiscardMessages() error
 
 	// Messages returns an iterator for accessing the queued messages.

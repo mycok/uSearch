@@ -2,8 +2,8 @@ package bspgraph
 
 // Edge represents a directed edge in the Graph.
 type Edge struct {
-	value  interface{}
 	destID string
+	value  interface{}
 }
 
 // DstID returns the vertex ID that corresponds to this edge's target endpoint.
