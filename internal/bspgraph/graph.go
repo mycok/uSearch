@@ -72,6 +72,7 @@ func (g *Graph) Close() error {
 // Reset the state of the graph by removing any existing vertices or
 // aggregators and resetting the superstep counter.
 func (g *Graph) Reset() error {
+	// Reset operations can be useful when a user wants to re-use the same graph to run other new steps.
 	g.superstep = 0
 	for _, v := range g.vertices {
 		// Close the both input and output message queue's for each vertex.
@@ -215,13 +216,14 @@ func (g *Graph) step() (int, error) {
 	}
 
 	// Block until worker pool has finished processing all vertices.
-	// This happens when a value is written to the stepCompletedCh.
+	// This happens when a worker processes the last vertex from g.vertices and
+	// an empty struct value is written to the stepCompletedCh.
 	<-g.stepCompletedCh
 
 	// Dequeque any errors.
 	var err error
 	select {
-	case err = <-g.errCh: // dequeue an error
+	case err = <-g.errCh: // try to dequeue an error, if no error is available run the default case instead.
 	default: // no error available
 	}
 
@@ -235,6 +237,7 @@ func (g *Graph) startWorkers(numOfWorkers int) {
 	g.errCh = make(chan error, 1)
 	g.stepCompletedCh = make(chan struct{})
 
+	g.wg.Add(numOfWorkers)
 	for i := 0; i < numOfWorkers; i++ {
 		go g.stepWorker()
 	}
@@ -258,6 +261,7 @@ func (g *Graph) stepWorker() {
 		}
 
 		// Check if this is the last vertex in the loop.
+		// Note: we only write to the stepCompletedCh after processing the last vertex.
 		if atomic.AddInt64(&g.pendingInStep, -1) == 0 {
 			g.stepCompletedCh <- struct{}{}
 		}
