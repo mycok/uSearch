@@ -58,6 +58,41 @@ func (s *GraphTestSuite) TestMessageExchange(c *check.C) {
 	}
 }
 
+func (s *GraphTestSuite) TestMessageBroadcast(c *check.C) {
+	g, err := bspgraph.NewGraph(bspgraph.GraphConfig{
+		ComputeFunc: func(g *bspgraph.Graph, v *bspgraph.Vertex, msgIt message.Iterator) error {
+			if err := g.BroadcastToNeighbors(v, &intMsg{value: 11}); err != nil {
+				return nil
+			}
+
+			for msgIt.Next() {
+				v.SetValue(msgIt.Message().(*intMsg).value)
+			}
+
+			return nil
+		},
+	})
+	c.Assert(err, check.IsNil)
+	defer func () { c.Assert(g.Close(), check.IsNil) }()
+
+	g.AddVertex("0", 11)
+	g.AddVertex("1", 0)
+	g.AddVertex("2", 0)
+	g.AddVertex("3", 0)
+
+	// Add edges to a single vertex.
+	c.Assert(g.AddEdge("0", "1", nil), check.IsNil)
+	c.Assert(g.AddEdge("0", "2", nil), check.IsNil)
+	c.Assert(g.AddEdge("0", "3", nil), check.IsNil)
+
+	err = executeFixedSteps(g, 2)
+	c.Assert(err, check.IsNil)
+
+	for id, v := range g.Vertices() {
+		c.Assert(v.Value(), check.Equals, 11, check.Commentf("vertex %v", id))
+	}
+}
+
 // .......
 type intMsg struct {
 	value int
