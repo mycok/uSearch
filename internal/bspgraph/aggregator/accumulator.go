@@ -16,8 +16,8 @@ type Float64Accumulator struct {
 func (a *Float64Accumulator) Type() string { return "Float64Accumulator" }
 
 // Get returns the current value of the accumulator.
-func (a *Float64Accumulator) Get() interface{} { 
-	return loadFloat64(&a.currSum) 
+func (a *Float64Accumulator) Get() interface{} {
+	return loadFloat64(&a.currSum)
 }
 
 // Set the current value of the accumulator.
@@ -50,12 +50,14 @@ func (a *Float64Accumulator) Aggregate(val interface{}) {
 		newV := oldV + v64
 
 		// Try to update the accumulator's currSum value by copying newV value into the a.currSum
-		// field and if successful return. 
+		// field and if successful return.
 		if atomic.CompareAndSwapUint64(
 			(*uint64)(unsafe.Pointer(&a.currSum)),
 			math.Float64bits(oldV),
 			math.Float64bits(newV),
-		) { return }
+		) {
+			return
+		}
 	}
 }
 
@@ -67,12 +69,12 @@ func (a *Float64Accumulator) Delta() interface{} {
 		prevSum := loadFloat64(&a.prevSum)
 
 		// Try to update the accumulator's prevSum value by copying currSum value into the prevSum
-		// field and if successful return the difference. 
+		// field and if successful return the difference.
 		if atomic.CompareAndSwapUint64(
 			(*uint64)(unsafe.Pointer(&a.prevSum)),
 			math.Float64bits(prevSum),
 			math.Float64bits(currSum),
-		) { 
+		) {
 			return currSum - prevSum
 		}
 	}

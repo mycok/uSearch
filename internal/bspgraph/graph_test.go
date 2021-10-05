@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/mycok/uSearch/internal/bspgraph"
 	"github.com/mycok/uSearch/internal/bspgraph/aggregator"
 	"github.com/mycok/uSearch/internal/bspgraph/message"
-	"github.com/mycok/uSearch/internal/bspgraph"
 
 	check "gopkg.in/check.v1"
 )
@@ -19,7 +19,7 @@ func Test(t *testing.T) {
 	check.TestingT(t)
 }
 
-type GraphTestSuite struct {}
+type GraphTestSuite struct{}
 
 func (s *GraphTestSuite) TestMessageExchange(c *check.C) {
 	g, err := bspgraph.NewGraph(bspgraph.GraphConfig{
@@ -45,7 +45,7 @@ func (s *GraphTestSuite) TestMessageExchange(c *check.C) {
 		},
 	})
 	c.Assert(err, check.IsNil)
-	defer func () { c.Assert(g.Close(), check.IsNil) }()
+	defer func() { c.Assert(g.Close(), check.IsNil) }()
 
 	g.AddVertex("0", 0)
 	g.AddVertex("1", 0)
@@ -73,7 +73,7 @@ func (s *GraphTestSuite) TestMessageBroadcast(c *check.C) {
 		},
 	})
 	c.Assert(err, check.IsNil)
-	defer func () { c.Assert(g.Close(), check.IsNil) }()
+	defer func() { c.Assert(g.Close(), check.IsNil) }()
 
 	g.AddVertex("0", 11)
 	g.AddVertex("1", 0)
@@ -116,7 +116,88 @@ func (s *GraphTestSuite) TestGraphAggregator(c *check.C) {
 
 	err = executeFixedSteps(g, 1)
 	c.Assert(err, check.IsNil)
-	c.Assert(g.Aggregators()["counter"].Get(), check.Equals, numOfVertices + offset)
+	c.Assert(g.Aggregators()["counter"].Get(), check.Equals, numOfVertices+offset)
+}
+
+func (s *GraphTestSuite) TestGraphMessageRelay(c *check.C) {
+	g1, err := bspgraph.NewGraph(bspgraph.GraphConfig{
+		ComputeFunc: func(g *bspgraph.Graph, v *bspgraph.Vertex, msgIt message.Iterator) error {
+			if g.Superstep() == 0 {
+				for _, e := range v.Edges() {
+					_ = g.SendMessage(e.DestID(), &intMsg{value: 42})
+				}
+				return nil
+			}
+
+			for msgIt.Next() {
+				v.SetValue(msgIt.Message().(*intMsg).value)
+			}
+			return nil
+		},
+	})
+	c.Assert(err, check.IsNil)
+	defer func() { c.Assert(g1.Close(), check.IsNil) }()
+
+	g2, err := bspgraph.NewGraph(bspgraph.GraphConfig{
+		ComputeFunc: func(g *bspgraph.Graph, v *bspgraph.Vertex, msgIt message.Iterator) error {
+			for msgIt.Next() {
+				m := msgIt.Message().(*intMsg)
+				v.SetValue(m.value)
+				_ = g.SendMessage("graph1.vertex", m)
+			}
+			return nil
+		},
+	})
+	c.Assert(err, check.IsNil)
+	defer func() { c.Assert(g2.Close(), check.IsNil) }()
+
+	g1.AddVertex("graph1.vertex", nil)
+	c.Assert(g1.AddEdge("graph1.vertex", "graph2.vertex", nil), check.IsNil)
+	g1.RegisterRelayer(localRelayer{to: g2})
+
+	g2.AddVertex("graph2.vertex", nil)
+	g2.RegisterRelayer(localRelayer{to: g1})
+
+	// Exec both graphs in lockstep for 3 steps.
+	// Step 0: g1 sends message to g2.
+	// Step 1: g2 receives the message, updates its value and sends message
+	//         back to g1.
+	// Step 2: g1 receives message and updates its value.
+	syncCh := make(chan struct{})
+	ex1 := bspgraph.NewExecutor(g1, bspgraph.ExecutorCallbacks{
+		PreStep: func(context.Context, *bspgraph.Graph) error {
+			syncCh <- struct{}{}
+			return nil
+		},
+		PostStep: func(context.Context, *bspgraph.Graph, int) error {
+			syncCh <- struct{}{}
+			return nil
+		},
+	})
+	ex2 := bspgraph.NewExecutor(g2, bspgraph.ExecutorCallbacks{
+		PreStep: func(context.Context, *bspgraph.Graph) error {
+			<-syncCh
+			return nil
+		},
+		PostStep: func(context.Context, *bspgraph.Graph, int) error {
+			<-syncCh
+			return nil
+		},
+	})
+
+	ex1DoneCh := make(chan struct{})
+	go func() {
+		err := ex1.RunSteps(context.TODO(), 3)
+		c.Assert(err, check.IsNil)
+		close(ex1DoneCh)
+	}()
+
+	err = ex2.RunSteps(context.TODO(), 3)
+	c.Assert(err, check.IsNil)
+	<-ex1DoneCh
+
+	c.Assert(g1.Vertices()["graph1.vertex"].Value(), check.Equals, 42)
+	c.Assert(g2.Vertices()["graph2.vertex"].Value(), check.Equals, 42)
 }
 
 // .......
@@ -124,12 +205,11 @@ type intMsg struct {
 	value int
 }
 
-func (m intMsg) Type() string { return "intMsg"}
-
+func (m intMsg) Type() string { return "intMsg" }
 
 type localRelayer struct {
 	relayErr error
-	to *bspgraph.Graph
+	to       *bspgraph.Graph
 }
 
 func (r localRelayer) Relay(destID string, msg message.Message) error {

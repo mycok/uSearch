@@ -17,7 +17,7 @@ type aggregator interface {
 
 var _ = check.Suite(new(AccumulatorTestSuite))
 
-type AccumulatorTestSuite struct {}
+type AccumulatorTestSuite struct{}
 
 func Test(t *testing.T) {
 	check.TestingT(t)
@@ -87,4 +87,3 @@ func (s *AccumulatorTestSuite) testConcurrentAccess(a aggregator, values []inter
 
 	return a.Get()
 }
-
