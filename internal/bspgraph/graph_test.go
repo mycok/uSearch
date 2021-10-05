@@ -2,7 +2,7 @@ package bspgraph_test
 
 import (
 	"context"
-	// "errors"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -198,6 +198,28 @@ func (s *GraphTestSuite) TestGraphMessageRelay(c *check.C) {
 
 	c.Assert(g1.Vertices()["graph1.vertex"].Value(), check.Equals, 42)
 	c.Assert(g2.Vertices()["graph2.vertex"].Value(), check.Equals, 42)
+}
+
+func (s *GraphTestSuite) TestHandleComputeFuncErr(c *check.C) {
+	g, err := bspgraph.NewGraph(bspgraph.GraphConfig{
+		ComputeWorkers: 4,
+		ComputeFunc: func(g *bspgraph.Graph, v *bspgraph.Vertex, msgIt message.Iterator) error {
+			if v.ID() == "50" {
+				return errors.New("something went wrong")
+			}
+			return nil
+		},
+	})
+	c.Assert(err, check.IsNil)
+	defer func() { c.Assert(g.Close(), check.IsNil) }()
+
+	numOfVerts := 1000
+	for i := 0; i < numOfVerts; i++ {
+		g.AddVertex(fmt.Sprint(i), nil)
+	}
+
+	err = executeFixedSteps(g, 1)
+	c.Assert(err, check.ErrorMatches, `running compute function for vertex "50" failed: something went wrong`)
 }
 
 // .......
