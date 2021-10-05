@@ -3,10 +3,10 @@ package bspgraph_test
 import (
 	"context"
 	// "errors"
-	// "fmt"
+	"fmt"
 	"testing"
 
-	// "github.com/mycok/uSearch/internal/bspgraph/aggregator"
+	"github.com/mycok/uSearch/internal/bspgraph/aggregator"
 	"github.com/mycok/uSearch/internal/bspgraph/message"
 	"github.com/mycok/uSearch/internal/bspgraph"
 
@@ -91,6 +91,32 @@ func (s *GraphTestSuite) TestMessageBroadcast(c *check.C) {
 	for id, v := range g.Vertices() {
 		c.Assert(v.Value(), check.Equals, 11, check.Commentf("vertex %v", id))
 	}
+}
+
+func (s *GraphTestSuite) TestGraphAggregator(c *check.C) {
+	g, err := bspgraph.NewGraph(bspgraph.GraphConfig{
+		ComputeWorkers: 4,
+		ComputeFunc: func(g *bspgraph.Graph, v *bspgraph.Vertex, msgIt message.Iterator) error {
+			g.Aggregator("counter").Aggregate(1)
+
+			return nil
+		},
+	})
+	c.Assert(err, check.IsNil)
+	defer func() { c.Assert(g.Close(), check.IsNil) }()
+
+	offset := 5
+	g.RegisterAggregator("counter", new(aggregator.IntAccumulator))
+	g.Aggregator("counter").Aggregate(offset)
+
+	numOfVertices := 1000
+	for i := 0; i < numOfVertices; i++ {
+		g.AddVertex(fmt.Sprint(i), nil)
+	}
+
+	err = executeFixedSteps(g, 1)
+	c.Assert(err, check.IsNil)
+	c.Assert(g.Aggregators()["counter"].Get(), check.Equals, numOfVertices + offset)
 }
 
 // .......
