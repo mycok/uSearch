@@ -153,6 +153,7 @@ func (p *Pipeline) Process(ctx context.Context, src Source, sink Sink) error {
 // stage of the pipeline.
 func sourceWorker(ctx context.Context, src Source, outCh chan<- Payload, errCh chan<- error) {
 	// Retrieve the payload from the source.
+	// This loop runs until there are no more payloads to process. that is until src.Next() returns false.
 	for src.Next(ctx) {
 		payload := src.Payload()
 
