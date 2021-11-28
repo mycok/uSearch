@@ -33,13 +33,13 @@ func (s *AccumulatorTestSuite) TestFloat64Accumulator(c *check.C) {
 		expected += next
 	}
 
-	recieved := s.testConcurrentAccess(new(Float64Accumulator), values).(float64)
-	absDelta := math.Abs(expected - recieved)
+	received := s.testConcurrentAccess(new(Float64Accumulator), values).(float64)
+	absDelta := math.Abs(expected - received)
 
 	c.Assert(
 		absDelta < 1e-6, check.Equals,
 		true,
-		check.Commentf("expected to get %f; got %f; |delta| %f > 1e-6", expected, recieved, absDelta),
+		check.Commentf("expected to get %f; got %f; |delta| %f > 1e-6", expected, received, absDelta),
 	)
 }
 
@@ -53,8 +53,8 @@ func (s *AccumulatorTestSuite) TestIntAccumulator(c *check.C) {
 		expected += next
 	}
 
-	recieved := s.testConcurrentAccess(new(IntAccumulator), values).(int)
-	c.Assert(expected, check.Equals, recieved)
+	received := s.testConcurrentAccess(new(IntAccumulator), values).(int)
+	c.Assert(expected, check.Equals, received)
 }
 
 func (s *AccumulatorTestSuite) testConcurrentAccess(a aggregator, values []interface{}) interface{} {

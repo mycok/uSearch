@@ -6,7 +6,7 @@ type Edge struct {
 	value  interface{}
 }
 
-// DstID returns the vertex ID that corresponds to this edge's target endpoint.
+// DestID returns the vertex ID that corresponds to this edge's target endpoint.
 func (e *Edge) DestID() string { return e.destID }
 
 // Value returns the value associated with this edge.

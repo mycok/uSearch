@@ -8,7 +8,7 @@ import (
 
 // Document describes a web-page whose content has been indexed.
 type Document struct {
-	// The ID of the linkgraph entry that points to this document.
+	// The ID of the graphlink entry that points to this document.
 	LinKID uuid.UUID
 
 	// The URL pointing to were the document was obtained from.

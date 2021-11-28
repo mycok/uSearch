@@ -26,7 +26,7 @@ type GraphConfig struct {
 	ComputeWorkers int
 }
 
-// validate checks whether a graph configuration is valid and sets the default
+// Validate checks whether a graph configuration is valid and sets the default
 // values where required.
 func (g *GraphConfig) Validate() error {
 	var err error
