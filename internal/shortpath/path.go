@@ -12,8 +12,8 @@ import (
 // Calculator implements a shortest path calculator from a single vertex to
 // all other vertices in a connected graph.
 type Calculator struct {
-	g *bspgraph.Graph // g value must be a pointer of Graph type.
-	srcID string
+	g               *bspgraph.Graph // g value must be a pointer of Graph type.
+	srcID           string
 	executorFactory bspgraph.ExecutorFactory // executorFactory can be a value, a function / method or an expression that returns type *Executor.
 }
 
@@ -25,7 +25,7 @@ func NewCalculator(numOfWorkers int) (*Calculator, error) {
 
 	var err error
 	if c.g, err = bspgraph.NewGraph(bspgraph.GraphConfig{
-		ComputeFunc: c.findShortestPath,
+		ComputeFunc:    c.findShortestPath,
 		ComputeWorkers: numOfWorkers,
 	}); err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (c *Calculator) ShortestPathTo(destID string) ([]string, int, error) {
 
 	var (
 		minDist = v.Value().(*pathState).minDistance
-		path []string
+		path    []string
 	)
 
 	for ; v.ID() != c.srcID; v = vertMap[v.Value().(*pathState).prevInPath] {
@@ -135,7 +135,7 @@ func (c *Calculator) findShortestPath(g *bspgraph.Graph, v *bspgraph.Vertex, msg
 		for _, e := range v.Edges() {
 			costMsg := &PathCostMessage{
 				FromID: v.ID(),
-				Cost: minDist + e.Value().(int),
+				Cost:   minDist + e.Value().(int),
 			}
 
 			if err := g.SendMessage(e.DestID(), costMsg); err != nil {
@@ -164,5 +164,5 @@ func (pc PathCostMessage) Type() string { return "cost" }
 // pathState represents info about a vertex path and is stored as the vertex value.
 type pathState struct {
 	minDistance int
-	prevInPath string
+	prevInPath  string
 }

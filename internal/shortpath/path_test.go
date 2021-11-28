@@ -12,7 +12,7 @@ import (
 
 var _ = check.Suite(new(shortpathTestSuite))
 
-type shortpathTestSuite struct {}
+type shortpathTestSuite struct{}
 
 func Test(t *testing.T) {
 	check.TestingT(t)

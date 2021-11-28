@@ -31,7 +31,7 @@ type Detector struct {
 	privateNetBlocks []*net.IPNet
 }
 
-// NewDetector returns a new Detector instance which is initialized with the
+// New returns a new Detector instance which is initialized with the
 // default list of IPv4/IPv6 CIDR blocks that correspond to private networks
 // according to RFC1918.
 func New() (*Detector, error) {

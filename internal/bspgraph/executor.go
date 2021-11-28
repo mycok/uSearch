@@ -43,7 +43,7 @@ type ExecutorFactory func(*Graph, ExecutorCallbacks) *Executor
 // Users can provide an optional set of callbacks to be executed before and
 // after each super-step.
 type Executor struct {
-	g   *Graph // g value must be a pointer of Graph type.
+	g   *Graph            // g value must be a pointer of Graph type.
 	cbs ExecutorCallbacks // cbs can be a value or an expression that returns type ExecutorCallbacks.
 }
 

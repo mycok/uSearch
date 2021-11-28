@@ -44,6 +44,7 @@ type Relayer interface {
 // RelayerFunc(f) is a Relayer that calls f.
 type RelayerFunc func(string, message.Message) error
 
+// Relay is the method that calls f(string, message.Message)
 func (f RelayerFunc) Relay(dest string, msg message.Message) error {
 	return f(dest, msg)
 }

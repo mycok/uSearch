@@ -9,21 +9,21 @@ import (
 )
 
 type vertexState struct {
-	token int
-	color int
+	token      int
+	color      int
 	usedColors map[int]bool
 }
 
 func (s *vertexState) asMessage(id string) *vertexStateMessage {
 	return &vertexStateMessage{
-		ID: id,
+		ID:    id,
 		Token: s.token,
 		Color: s.color,
 	}
 }
 
 type vertexStateMessage struct {
-	ID string
+	ID    string
 	Token int
 	Color int
 }
@@ -33,14 +33,14 @@ func (m *vertexStateMessage) Type() string { return "vertexStateMessage" }
 
 // Assigner type encapsulates the state of a graph color assigning type.
 type Assigner struct {
-	g *bspgraph.Graph
+	g               *bspgraph.Graph
 	executorFactory bspgraph.ExecutorFactory
 }
 
 // NewColorAssigner returns a new color Assigner instance.
 func NewColorAssigner(numOfWorkers int) (*Assigner, error) {
 	g, err := bspgraph.NewGraph(bspgraph.GraphConfig{
-		ComputeFunc: assignColorsToGraph,
+		ComputeFunc:    assignColorsToGraph,
 		ComputeWorkers: numOfWorkers,
 	})
 	if err != nil {
@@ -48,7 +48,7 @@ func NewColorAssigner(numOfWorkers int) (*Assigner, error) {
 	}
 
 	return &Assigner{
-		g: g,
+		g:               g,
 		executorFactory: bspgraph.NewExecutor,
 	}, nil
 }
@@ -78,6 +78,7 @@ func (a *Assigner) AddVertex(id string) {
 func (a *Assigner) AddPrecoloredVertex(id string, color int) {
 	a.g.AddVertex(id, &vertexState{color: color})
 }
+
 // AddUndirectedEdge creates an un-directed edge from srcID to dstID.
 func (a *Assigner) AddUndirectedEdge(srcID, destID string) error {
 	if err := a.g.AddEdge(srcID, destID, nil); err != nil {
