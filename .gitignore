@@ -19,3 +19,7 @@ coverage.text
 
 # IDE cache directories
 .vscode/**
+
+# Misc
+cockroach-data
+.DS_Store

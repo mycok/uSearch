@@ -38,23 +38,32 @@ lint-check-deps:
 				go get -u github.com/golangci/golangci-lint/cmd/golangci-lint; \
 		fi
 
-.PHONY: create-cdb-migrations run-cdb-up-migrations migrate-check-deps check-cdb-env
+.PHONY: create-db-table run-db-up-migrations \
+run-db-down-migations fix-dirty-db migrate-check-deps check-db-env
 
 ##	new-cdb-migrations: Create new migration files with the specified name passed as a commandline env var [name]
-new-cdb-migrations: migrate-check-deps check-cdb-env
+create-db-table: migrate-check-deps
 		@echo '.....Creating migration files for ${name}.....'
-		migrate create -seq -ext .sql -dir=./internal/graphlink/store/cdb/migrations ${name}
+		migrate create -seq -ext .sql -dir=./linkgraph/store/cdb/migrations ${name}
 
 ##	run-cdb-migations: Run all [up] migrations
-run-cdb-up-migations: migrate-check-deps check-cdb-env
-		migrate -path ./internal/graphlink/store/cdb/migrations -database '$(subst postgresql,cockroach,${CDB_DSN})' up
+run-db-up-migations: migrate-check-deps
+		migrate -path ./linkgraph/store/cdb/migrations -database '$(subst postgresql,cockroachdb,${CDB_DSN})' up ${version}
+
+##	run-cdb-migations: Run all [down] migrations
+run-db-down-migations: migrate-check-deps
+		migrate -path ./linkgraph/store/cdb/migrations -database '$(subst postgresql,cockroachdb,${CDB_DSN})' down ${version}
+
+##	fix-dirty-db: Cleans and restores the database to a usable / clean state.
+fix-dirty-db: migrate-check-deps
+		migrate -path ./linkgraph/store/cdb/migrations -database '$(subst postgresql,cockroachdb,${CDB_DSN})' force ${version}
 
 ##	migrate-check-deps: Check for the existance of the migrate tool with support for cockroach db
 migrate-check-deps:
 		@if [ -z `which migrate` ]; then \
 				echo "[go get] installing golang-migrate cmd with cockroachdb support"; \
 				echo "[go get] installing github.com/golang-migrate/migrate/v4/cmd/migrate"; \
-				go get -tags 'cockroachdb postgres' -u github.com/golang-migrate/migrate/v4/cmd/migrate;\
+				go install -tags 'cockroachdb postgres' -u github.com/golang-migrate/migrate/v4/cmd/migrate@latest;\
 		fi
 
 ##	dsn_missing_error: Error string returned in an event where the CDB_DSN env var is missing / undefined
