@@ -13,7 +13,7 @@ type Config struct {
 	// one of the outgoing links on the page they are currently visiting
 	// instead of visiting a random page in the graph.
 	// If not specified, a default value of 0.85 will be used instead.
-	DampingFactor        float64
+	DampingFactor float64
 
 	// At each step of the iterative PageRank algorithm, an accumulator
 	// tracks the sum of absolute differences (SAD) of the PageRank
@@ -25,7 +25,7 @@ type Config struct {
 
 	// The number of workers to spin up for computing PageRank scores. If
 	// not specified, a default value of 1 will be used instead.
-	ComputeWorkers       int
+	ComputeWorkers int
 }
 
 // validate checks whether the PageRank calculator configuration is valid and

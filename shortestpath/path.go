@@ -19,9 +19,9 @@ import (
 var _ queue.Message = (*pathCostMessage)(nil)
 
 type pathCostMessage struct {
-	// The ID of the vertex from which this cost message originates.
+	// ID of the vertex from which this cost message originates.
 	fromID string
-	// The cost of the path from this vertex to the source vertex via FromID.
+	// Cost of the path from this vertex to the source vertex via FromID.
 	cost int
 }
 
@@ -41,9 +41,9 @@ type pathState struct {
 // Calculator ia a shortest path calculator from a single vertex to
 // all other vertices in a connected graph.
 type Calculator struct {
-	g *bsp.Graph
-	// A node vertex from which to start the calculation.
-	srcID string
+	g               *bsp.Graph
+	// A vertex from which to start the calculation.
+	srcID           string
 	// Executor to manage step execution. it's is lazily constructed.
 	executorFactory bsp.ExecutorFactory
 }
@@ -82,7 +82,7 @@ func (c *Calculator) AddVertex(id string) {
 	c.g.AddVertex(id, nil)
 }
 
-// AddEdge adds an un directed edge from srcID to dstID with the specified cost.
+// AddEdge adds a directed edge from srcID to dstID with the specified cost.
 // An error will be returned if a negative cost value is provided.
 func (c *Calculator) AddEdge(srcID string, destID string, cost int) error {
 	if cost < 0 {
@@ -92,9 +92,9 @@ func (c *Calculator) AddEdge(srcID string, destID string, cost int) error {
 	return c.g.AddEdge(srcID, destID, cost)
 }
 
-// CalculateShortestPaths executes the calculator instance which calculates the
-// shortest path from the source vertex or node to all other vertices / nodes
-// in the graph.
+// CalculateShortestPaths executes the shortest path compute function which
+// calculates shortest path from the source vertex or node to all other
+// vertices / nodes in the graph.
 func (c *Calculator) CalculateShortestPaths(
 	ctx context.Context, srcID string,
 ) error {
