@@ -60,14 +60,14 @@ func NewColorAssigner(numOfWorkers int) (*Assigner, error) {
 	}, nil
 }
 
+// Graph returns the underlying Graph instance.
+func (a *Assigner) Graph() *bsp.Graph {
+	return a.g
+}
+
 // Close frees up any allocated graph resources.
 func (a *Assigner) Close() error {
 	return a.g.Close()
-}
-
-// Graph returns the underlying bspgraph.Graph instance.
-func (a *Assigner) Graph() *bsp.Graph {
-	return a.g
 }
 
 // SetExecutorFactory sets a custom executor factory for the calculator.
