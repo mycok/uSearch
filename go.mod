@@ -9,6 +9,8 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/lib/pq v1.10.7
 	github.com/microcosm-cc/bluemonday v1.0.21
+	google.golang.org/grpc v1.53.0
+	google.golang.org/protobuf v1.28.1
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 )
 
@@ -27,7 +29,7 @@ require (
 	github.com/couchbase/vellum v1.0.2 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.0.0-20211216131617-bbee439d559c // indirect
 	github.com/glycerine/go-unsnap-stream v0.0.0-20181221182339-f9677308dec2 // indirect
-	github.com/golang/protobuf v1.3.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
@@ -37,8 +39,10 @@ require (
 	github.com/tinylib/msgp v1.1.0 // indirect
 	github.com/willf/bitset v1.1.10 // indirect
 	go.etcd.io/bbolt v1.3.5 // indirect
-	golang.org/x/net v0.0.0-20221002022538-bcab6841153b // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
+	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
 )
 
 require (

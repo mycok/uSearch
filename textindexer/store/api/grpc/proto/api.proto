@@ -1,5 +1,5 @@
-syntax="proto3";
-package proto;
+syntax = "proto3";
+option go_package = "/proto";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
@@ -28,7 +28,7 @@ message Query {
 // QueryResult contains either the total count of results for a query or a
 // single document from the resultset.
 message QueryResult {
-    oneOf result {
+    oneof result {
         uint64 doc_count = 1;
         Document doc = 2; 
     }
@@ -52,5 +52,5 @@ service TextIndexer {
 
     // UpdateScore updates the PageRank score for a document with the
 	// specified link ID.
-    rpc UpdateScore(UpdateScoreRequest) returns (google.probuf.Empty);
+    rpc UpdateScore(UpdateScoreRequest) returns (google.protobuf.Empty);
 }
