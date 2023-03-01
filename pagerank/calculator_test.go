@@ -25,12 +25,12 @@ type edge struct {
 
 type spec struct {
 	description string
-	vertices []string
-	edges []edge
-	expScores map[string]float64
+	vertices    []string
+	edges       []edge
+	expScores   map[string]float64
 }
 
-type CalculatorTestSuite struct {}
+type CalculatorTestSuite struct{}
 
 func (s *CalculatorTestSuite) TestSimpleGraphCase1(c *check.C) {
 	spec := spec{
@@ -142,7 +142,6 @@ func (s *CalculatorTestSuite) TestConvergenceForLargeGraphs(c *check.C) {
 	s.assertOnConvergence(c, 100000, 7)
 }
 
-
 func (s *CalculatorTestSuite) assertOnPageRankScores(c *check.C, spec spec) {
 	c.Log(spec.description)
 
@@ -151,7 +150,7 @@ func (s *CalculatorTestSuite) assertOnPageRankScores(c *check.C, spec spec) {
 
 	calc, err := pagerank.NewCalculator(pagerank.Config{
 		ComputeWorkers: 2,
-		DampingFactor: 0.85,
+		DampingFactor:  0.85,
 	})
 	c.Assert(err, check.IsNil)
 	defer func() {
@@ -182,22 +181,22 @@ func (s *CalculatorTestSuite) assertOnPageRankScores(c *check.C, spec spec) {
 			check.Commentf(
 				"expected score for %v to be %f ± 0.01; got %f (abs. delta %f)",
 				id, spec.expScores[id], score, absDelta,
-		))
-		
+			))
+
 		return nil
 	})
 	c.Assert(err, check.IsNil)
 
 	c.Assert(
-		(1.0 - pageRankSum) <= 0.001, check.Equals, true,
+		(1.0-pageRankSum) <= 0.001, check.Equals, true,
 		check.Commentf(
 			"expected all pagerank scores to add up to 1.0; got %f", pageRankSum,
-	))
+		))
 }
 
 func (s *CalculatorTestSuite) assertOnConvergence(c *check.C, numOfLinks, maxOutLinks int) {
 	calc, err := pagerank.NewCalculator(pagerank.Config{
-		ComputeWorkers: 32,
+		ComputeWorkers:       32,
 		MinSADForConvergence: 0.001,
 	})
 	c.Assert(err, check.IsNil)
@@ -207,7 +206,7 @@ func (s *CalculatorTestSuite) assertOnConvergence(c *check.C, numOfLinks, maxOut
 
 	// Ensure to use the same seed to make the test deterministic.
 	rand.Seed(42)
-	
+
 	names := make([]string, numOfLinks)
 	for i := 0; i < numOfLinks; i++ {
 		names[i] = strconv.FormatInt(int64(i), 10)
@@ -246,7 +245,7 @@ func (s *CalculatorTestSuite) assertOnConvergence(c *check.C, numOfLinks, maxOut
 	c.Assert(err, check.IsNil)
 
 	c.Assert(
-		(1.0 - pageRankSum) <= 0.001, check.Equals, true, 
+		(1.0-pageRankSum) <= 0.001, check.Equals, true,
 		check.Commentf("expected all pagerank scores to add up to 1.0; got %f", pageRankSum),
 	)
 }

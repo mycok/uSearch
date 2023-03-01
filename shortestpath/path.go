@@ -41,9 +41,9 @@ type pathState struct {
 // Calculator ia a shortest path calculator from a single vertex to
 // all other vertices in a connected graph.
 type Calculator struct {
-	g               *bsp.Graph
+	g *bsp.Graph
 	// A vertex from which to start the calculation.
-	srcID           string
+	srcID string
 	// Executor to manage step execution. it's is lazily constructed.
 	executorFactory bsp.ExecutorFactory
 }
