@@ -27,15 +27,15 @@ func NewCalculator(cfg Config) (*Calculator, error) {
 
 	g, err := bsp.NewGraph(bsp.GraphConfig{
 		ComputeWorkers: cfg.ComputeWorkers,
-		ComputeFn: makeComputeFunc(cfg.DampingFactor),
+		ComputeFn:      makeComputeFunc(cfg.DampingFactor),
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &Calculator{
-		g: g,
-		cfg: cfg,
+		g:               g,
+		cfg:             cfg,
 		executorFactory: bsp.NewExecutor,
 	}, nil
 }
@@ -98,14 +98,14 @@ func (c *Calculator) CalculatePageRanks(ctx context.Context) error {
 
 		ShouldRunAnotherStep: func(
 			_ context.Context, g *bsp.Graph, _ int,
-			) (bool, error) {
+		) (bool, error) {
 
 			// Since super steps 0 and 1 are part of the algorithm
 			// initialization, the predicate should only be evaluated for
 			// super steps > 1
 			//
 			// sum of absolute differences [SAD]
-			sad := c.g.Aggregator("SAD").Get().(float64) 
+			sad := c.g.Aggregator("SAD").Get().(float64)
 
 			return !(g.SuperStep() > 1 && sad < c.cfg.MinSADForConvergence), nil
 		},
@@ -122,9 +122,3 @@ func (c *Calculator) registerAggregators() {
 	c.g.RegisterAggregator("residual_1", new(aggregator.Float64Accumulator))
 	c.g.RegisterAggregator("SAD", new(aggregator.Float64Accumulator))
 }
-
-
-
-
-
-

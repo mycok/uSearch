@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -35,7 +34,7 @@ func (s *LinkGraphServer) UpsertLink(
 
 	var err error
 	link := graph.Link{
-		ID: uuidFromBytes(req.Uuid),
+		ID:  uuidFromBytes(req.Uuid),
 		URL: req.Url,
 	}
 
@@ -62,8 +61,8 @@ func (s *LinkGraphServer) UpsertEdge(
 ) (*proto.Edge, error) {
 
 	edge := graph.Edge{
-		ID:  uuidFromBytes(req.Uuid),
-		Src: uuidFromBytes(req.SrcUuid),
+		ID:   uuidFromBytes(req.Uuid),
+		Src:  uuidFromBytes(req.SrcUuid),
 		Dest: uuidFromBytes(req.DestUuid),
 	}
 
@@ -101,13 +100,13 @@ func (s *LinkGraphServer) Links(
 	if err != nil {
 		return err
 	}
-	defer func () { _ = it.Close() }()
+	defer func() { _ = it.Close() }()
 
 	for it.Next() {
 		link := it.Link()
 		msg := proto.Link{
-			Uuid: link.ID[:],
-			Url: link.URL,
+			Uuid:        link.ID[:],
+			Url:         link.URL,
 			RetrievedAt: timeToProto(link.RetrievedAt),
 		}
 
@@ -148,14 +147,14 @@ func (s *LinkGraphServer) Edges(
 	if err != nil {
 		return err
 	}
-	defer func () { _ = it.Close() }()
+	defer func() { _ = it.Close() }()
 
 	for it.Next() {
 		edge := it.Edge()
 		msg := proto.Edge{
-			Uuid: edge.ID[:],
-			SrcUuid: edge.Src[:],
-			DestUuid: edge.Dest[:],
+			Uuid:      edge.ID[:],
+			SrcUuid:   edge.Src[:],
+			DestUuid:  edge.Dest[:],
 			UpdatedAt: timeToProto(edge.UpdatedAt),
 		}
 
@@ -179,7 +178,7 @@ func (s *LinkGraphServer) RemoveStaleEdges(
 	_ context.Context, req *proto.RemoveStaleEdgesQuery,
 ) (*emptypb.Empty, error) {
 
-	var err  error
+	var err error
 
 	if err = req.UpdatedBefore.CheckValid(); err != nil {
 		return nil, err
@@ -189,7 +188,7 @@ func (s *LinkGraphServer) RemoveStaleEdges(
 		uuidFromBytes(req.FromUuid), req.UpdatedBefore.AsTime(),
 	)
 
-	return new(empty.Empty), err
+	return new(emptypb.Empty), err
 }
 
 func uuidFromBytes(b []byte) uuid.UUID {
