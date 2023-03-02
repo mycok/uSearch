@@ -14,7 +14,7 @@ import (
 // LinkGraphClient provides an API that wraps the graph.Graph interface
 // for accessing graph data store instances exposed by a remote gRPC server.
 type LinkGraphClient struct {
-	ctx  context.Context
+	ctx       context.Context
 	rpcClient proto.LinkGraphClient
 }
 
@@ -23,7 +23,7 @@ func NewLinkGraphClient(
 ) *LinkGraphClient {
 
 	return &LinkGraphClient{
-		ctx: ctx,
+		ctx:       ctx,
 		rpcClient: rpcClient,
 	}
 }
@@ -31,8 +31,8 @@ func NewLinkGraphClient(
 // UpsertLink creates a new or updates an existing link.
 func (c *LinkGraphClient) UpsertLink(link *graph.Link) error {
 	req := &proto.Link{
-		Uuid: link.ID[:],
-		Url: link.URL,
+		Uuid:        link.ID[:],
+		Url:         link.URL,
 		RetrievedAt: timeToProto(link.RetrievedAt),
 	}
 
@@ -51,8 +51,8 @@ func (c *LinkGraphClient) UpsertLink(link *graph.Link) error {
 // UpsertEdge creates a new or updates an existing edge.
 func (c *LinkGraphClient) UpsertEdge(edge *graph.Edge) error {
 	req := &proto.Edge{
-		Uuid:    edge.ID[:],
-		SrcUuid: edge.Src[:],
+		Uuid:     edge.ID[:],
+		SrcUuid:  edge.Src[:],
 		DestUuid: edge.Dest[:],
 	}
 	result, err := c.rpcClient.UpsertEdge(c.ctx, req)
@@ -76,9 +76,9 @@ func (c *LinkGraphClient) Links(
 	filter := timeToProto(retrievedBefore)
 
 	req := &proto.Range{
-		FromUuid: fromID[:],
-		ToUuid:   toID[:],
-		TimeFilter:   filter,
+		FromUuid:   fromID[:],
+		ToUuid:     toID[:],
+		TimeFilter: filter,
 	}
 
 	ctx, cancel := context.WithCancel(c.ctx)
@@ -90,7 +90,7 @@ func (c *LinkGraphClient) Links(
 	}
 
 	return &linkIterator{
-		stream: stream,
+		stream:   stream,
 		cancelFn: cancel,
 	}, nil
 }
@@ -100,14 +100,14 @@ func (c *LinkGraphClient) Links(
 // [updatedBefore] time.
 func (c *LinkGraphClient) Edges(
 	fromID, toID uuid.UUID, updatedBefore time.Time,
-) (graph.EdgeIterator, error)  {
+) (graph.EdgeIterator, error) {
 
 	filter := timeToProto(updatedBefore)
 
 	req := &proto.Range{
-		FromUuid: fromID[:],
-		ToUuid:   toID[:],
-		TimeFilter:   filter,
+		FromUuid:   fromID[:],
+		ToUuid:     toID[:],
+		TimeFilter: filter,
 	}
 
 	ctx, cancel := context.WithCancel(c.ctx)
@@ -119,7 +119,7 @@ func (c *LinkGraphClient) Edges(
 	}
 
 	return &edgeIterator{
-		stream: stream,
+		stream:   stream,
 		cancelFn: cancel,
 	}, nil
 }
@@ -131,19 +131,19 @@ func (c *LinkGraphClient) RemoveStaleEdges(
 ) error {
 
 	req := &proto.RemoveStaleEdgesQuery{
-		FromUuid: fromID[:],
+		FromUuid:      fromID[:],
 		UpdatedBefore: timeToProto(updatedBefore),
 	}
 
 	_, err := c.rpcClient.RemoveStaleEdges(c.ctx, req)
-	
+
 	return err
 }
 
 type linkIterator struct {
-	stream  proto.LinkGraph_LinksClient
-	link    *graph.Link
-	lastErr error
+	stream   proto.LinkGraph_LinksClient
+	link     *graph.Link
+	lastErr  error
 	cancelFn func()
 }
 
@@ -163,8 +163,8 @@ func (i *linkIterator) Next() bool {
 	}
 
 	i.link = &graph.Link{
-		ID: uuidFromBytes(result.Uuid),
-		URL: result.Url,
+		ID:          uuidFromBytes(result.Uuid),
+		URL:         result.Url,
 		RetrievedAt: result.RetrievedAt.AsTime(),
 	}
 
@@ -191,9 +191,9 @@ func (i *linkIterator) Link() *graph.Link {
 
 // edgeIterator is a graph.EdgeIterator implementation for the in-memory graph.
 type edgeIterator struct {
-	stream proto.LinkGraph_EdgesClient
-	lastErr error
-	edge    *graph.Edge
+	stream   proto.LinkGraph_EdgesClient
+	lastErr  error
+	edge     *graph.Edge
 	cancelFn func()
 }
 
@@ -213,9 +213,9 @@ func (i *edgeIterator) Next() bool {
 	}
 
 	i.edge = &graph.Edge{
-		ID: uuidFromBytes(result.Uuid),
-		Src: uuidFromBytes(result.SrcUuid),
-		Dest: uuidFromBytes(result.DestUuid),
+		ID:        uuidFromBytes(result.Uuid),
+		Src:       uuidFromBytes(result.SrcUuid),
+		Dest:      uuidFromBytes(result.DestUuid),
 		UpdatedAt: result.UpdatedAt.AsTime(),
 	}
 
@@ -238,7 +238,3 @@ func (i *edgeIterator) Close() error {
 func (i *edgeIterator) Edge() *graph.Edge {
 	return i.edge
 }
-
-
-
-
