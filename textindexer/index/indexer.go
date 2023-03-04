@@ -41,6 +41,7 @@ type Iterator interface {
 	TotalCount() uint64
 }
 
+// QueryType represents an integer value for a specific query.
 type QueryType uint8
 
 const (

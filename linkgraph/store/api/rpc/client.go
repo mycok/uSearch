@@ -18,6 +18,7 @@ type LinkGraphClient struct {
 	rpcClient proto.LinkGraphClient
 }
 
+// NewLinkGraphClient configures and returns a LinkGraphClient instance.
 func NewLinkGraphClient(
 	ctx context.Context, rpcClient proto.LinkGraphClient,
 ) *LinkGraphClient {
