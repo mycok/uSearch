@@ -20,7 +20,7 @@ type linkIterator struct {
 	link    *graph.Link
 }
 
-// Next loads the next item, returns false when no more documents
+// Next loads the next item, returns false when no more links
 // are available or when an error occurs.
 func (i *linkIterator) Next() bool {
 	// Check if an error occurred during the most recent [rows.Scan]
@@ -69,7 +69,7 @@ type edgeIterator struct {
 	edge    *graph.Edge
 }
 
-// Next advances the iterator. When no items are available or when an
+// Next advances the iterator. When no edges are available or when an
 // error occurs, calls to Next() return false.
 func (i *edgeIterator) Next() bool {
 	if i.lastErr != nil || !i.rows.Next() {
