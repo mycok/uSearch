@@ -41,12 +41,12 @@ type Iterator interface {
 	TotalCount() uint64
 }
 
-type queryType uint8
+type QueryType uint8
 
 const (
 	// QueryTypeMatch queries for results that match parts
 	// of the query expression.
-	QueryTypeMatch queryType = iota
+	QueryTypeMatch QueryType = iota
 
 	// QueryTypePhrase queries for results that exactly match the
 	// entire query expression / phrase (full-text search).
@@ -56,7 +56,7 @@ const (
 // Query defines properties for a search query.
 type Query struct {
 	// Defines how the indexer interprets the search expression.
-	Type queryType
+	Type QueryType
 	// Value to search for.
 	Expression string
 	// Determines the cursor value for the indexer / pagination.

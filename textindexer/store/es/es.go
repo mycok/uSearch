@@ -182,13 +182,13 @@ func (s *ElasticsearchIndex) FindByID(linkID uuid.UUID) (*index.Document, error)
 // Search performs a look up based on query and returns a result
 // iterator if successful or an error otherwise.
 func (s *ElasticsearchIndex) Search(q index.Query) (index.Iterator, error) {
-	var queryType string
+	var QueryType string
 
 	switch q.Type {
 	case index.QueryTypePhrase:
-		queryType = "phrase"
+		QueryType = "phrase"
 	default:
-		queryType = "best_fields"
+		QueryType = "best_fields"
 	}
 
 	query := map[string]interface{}{
@@ -196,7 +196,7 @@ func (s *ElasticsearchIndex) Search(q index.Query) (index.Iterator, error) {
 			"function_score": map[string]interface{}{
 				"query": map[string]interface{}{
 					"multi_match": map[string]interface{}{
-						"type":   queryType,
+						"type":   QueryType,
 						"query":  q.Expression,
 						"fields": []string{"Title", "Content"},
 					},
