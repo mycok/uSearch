@@ -26,7 +26,9 @@ func (s *ClientTestSuite) TestUpsertLink(c *check.C) {
 	defer ctrl.Finish()
 
 	rpcClient := mocks.NewMockLinkGraphClient(ctrl)
+
 	now := time.Now().Truncate(time.Second).UTC()
+
 	link := &graph.Link{
 		URL:         "http://www.example.com",
 		RetrievedAt: now,
@@ -144,13 +146,13 @@ func (s *ClientTestSuite) TestLinks(c *check.C) {
 	var linkCount int
 	for it.Next() {
 		linkCount++
-		next := it.Link()
+		link := it.Link()
 
-		if next.ID != uuid1 && next.ID != uuid2 {
-			c.Fatalf("unexpected link with ID %q", next.ID)
+		if link.ID != uuid1 && link.ID != uuid2 {
+			c.Fatalf("unexpected link with ID %q", link.ID)
 		}
-		c.Assert(next.URL, check.Equals, "http://example.com")
-		c.Assert(next.RetrievedAt, check.Equals, now)
+		c.Assert(link.URL, check.Equals, "http://example.com")
+		c.Assert(link.RetrievedAt, check.Equals, now)
 	}
 
 	err = it.Error()
