@@ -87,6 +87,7 @@ func (c *LinkGraphClient) Links(
 	if err != nil {
 		// Cancel the context
 		cancel()
+
 		return nil, err
 	}
 
@@ -148,7 +149,7 @@ type linkIterator struct {
 	cancelFn func()
 }
 
-// Next loads the next item, returns false when no more documents
+// Next loads the next item, returns false when no more links
 // are available or when an error occurs.
 func (i *linkIterator) Next() bool {
 	result, err := i.stream.Recv()
@@ -198,7 +199,7 @@ type edgeIterator struct {
 	cancelFn func()
 }
 
-// Next advances the iterator. When no items are available or when an
+// Next advances the iterator. When no edges are available or when an
 // error occurs, calls to Next() return false.
 func (i *edgeIterator) Next() bool {
 	result, err := i.stream.Recv()

@@ -15,7 +15,7 @@ type linkIterator struct {
 	currentIndex int
 }
 
-// Next loads the next item, returns false when no more documents
+// Next loads the next item, returns false when no more links
 // are available or when an error occurs.
 func (i *linkIterator) Next() bool {
 	if i.currentIndex >= len(i.links) {
@@ -58,7 +58,7 @@ type edgeIterator struct {
 	currentIndex int
 }
 
-// Next advances the iterator. When no items are available or when an
+// Next advances the iterator. When no edges are available or when an
 // error occurs, calls to Next() return false.
 func (i *edgeIterator) Next() bool {
 	if i.currentIndex >= len(i.edges) {
