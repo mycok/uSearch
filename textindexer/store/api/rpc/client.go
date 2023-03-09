@@ -29,7 +29,6 @@ func NewTextIndexerClient(
 	}
 }
 
-
 // Index adds a new document or updates an existing index entry
 // in case of an existing document.
 func (c *TextIndexerClient) Index(doc *index.Document) error {
@@ -52,15 +51,15 @@ func (c *TextIndexerClient) Index(doc *index.Document) error {
 
 // Search performs a look up based on query and returns a result
 // iterator if successful or an error otherwise.
-func (c *TextIndexerClient)	Search(q index.Query) (index.Iterator, error) {
+func (c *TextIndexerClient) Search(q index.Query) (index.Iterator, error) {
 	req := &proto.Query{
-		Type: proto.Query_Type(q.Type),
+		Type:       proto.Query_Type(q.Type),
 		Expression: q.Expression,
-		Offset: q.Offset,
+		Offset:     q.Offset,
 	}
 
 	ctx, cancel := context.WithCancel(c.ctx)
-	
+
 	stream, err := c.rpcClient.Search(ctx, req)
 	if err != nil {
 		// Cancel the context
@@ -85,8 +84,8 @@ func (c *TextIndexerClient)	Search(q index.Query) (index.Iterator, error) {
 	}
 
 	return &docIterator{
-		total: result.GetDocCount(),
-		stream: stream,
+		total:    result.GetDocCount(),
+		stream:   stream,
 		cancelFn: cancel,
 	}, nil
 }
@@ -94,9 +93,9 @@ func (c *TextIndexerClient)	Search(q index.Query) (index.Iterator, error) {
 // UpdateScore updates the PageRank score for a document with the
 // specified link ID. If no such document exists, a placeholder
 // document with the provided score will be created.
-func (c *TextIndexerClient)	UpdateScore(linkID uuid.UUID, score float64) error {
+func (c *TextIndexerClient) UpdateScore(linkID uuid.UUID, score float64) error {
 	req := &proto.UpdateScoreRequest{
-		LinkId: linkID[:],
+		LinkId:        linkID[:],
 		PageRankScore: score,
 	}
 
@@ -106,9 +105,9 @@ func (c *TextIndexerClient)	UpdateScore(linkID uuid.UUID, score float64) error {
 }
 
 type docIterator struct {
-	total uint64
+	total    uint64
 	stream   proto.TextIndexer_SearchClient
-	doc     *index.Document
+	doc      *index.Document
 	lastErr  error
 	cancelFn func()
 }
@@ -139,10 +138,10 @@ func (i *docIterator) Next() bool {
 	}
 
 	i.doc = &index.Document{
-		LinkID:          uuidFromBytes(doc.LinkId),
-		URL:         doc.Url,
-		Title: doc.Title,
-		Content: doc.Content,
+		LinkID:    uuidFromBytes(doc.LinkId),
+		URL:       doc.Url,
+		Title:     doc.Title,
+		Content:   doc.Content,
 		IndexedAt: doc.IndexedAt.AsTime(),
 	}
 
