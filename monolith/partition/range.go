@@ -62,7 +62,7 @@ func NewRange(numOfPartitions int, start, end uuid.UUID) (Range, error) {
 		if partition == numOfPartitions-1 {
 			to = end
 		} else {
-			tokenRange.Mul(partitionSize, big.NewInt(int64(numOfPartitions+1)))
+			tokenRange.Mul(partitionSize, big.NewInt(int64(partition+1)))
 			if to, err = uuid.FromBytes(tokenRange.Bytes()); err != nil {
 				return Range{}, fmt.Errorf("partition range: %w", err)
 			}
@@ -79,7 +79,7 @@ func NewRange(numOfPartitions int, start, end uuid.UUID) (Range, error) {
 
 // PartitionRange returns the [start, end) range for the requested partition.
 func (r Range) PartitionRange(partition int) (uuid.UUID, uuid.UUID, error) {
-	if partition <= 0 || partition >= len(r.rangeSplits) {
+	if partition < 0 || partition >= len(r.rangeSplits) {
 		return uuid.Nil, uuid.Nil, errors.New("invalid partition index")
 	}
 
