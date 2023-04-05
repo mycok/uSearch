@@ -12,8 +12,8 @@ import (
 // Range represents a contiguous UUID region which is split into a number of
 // partitions.
 type Range struct {
-	start       uuid.UUID
-	rangeSplits []uuid.UUID
+	start      uuid.UUID
+	partitions []uuid.UUID // Partitions carved from a particular UUID range.
 }
 
 // NewFullRange creates a new range that uses the full UUID value space and
@@ -29,11 +29,14 @@ func NewFullRange(numOfPartitions int) (Range, error) {
 // NewRange creates a new range [start, end] and splits it into the
 // provided number of partitions.
 func NewRange(numOfPartitions int, start, end uuid.UUID) (Range, error) {
+	// Check if the start is greater than or equal to end.
 	if bytes.Compare(start[:], end[:]) >= 0 {
 		return Range{}, errors.New(
 			"range start UUID must be less than the end UUID",
 		)
-	} else if numOfPartitions <= 0 {
+	}
+
+	if numOfPartitions <= 0 {
 		return Range{}, errors.New(
 			"number of partitions must be at least equal to 1",
 		)
@@ -53,12 +56,13 @@ func NewRange(numOfPartitions int, start, end uuid.UUID) (Range, error) {
 	)
 
 	var (
-		to     uuid.UUID
-		err    error
-		ranges = make([]uuid.UUID, numOfPartitions)
+		to         uuid.UUID
+		err        error
+		partitions = make([]uuid.UUID, numOfPartitions)
 	)
 
 	for partition := 0; partition < numOfPartitions; partition++ {
+		// If it's the last partition.
 		if partition == numOfPartitions-1 {
 			to = end
 		} else {
@@ -68,24 +72,24 @@ func NewRange(numOfPartitions int, start, end uuid.UUID) (Range, error) {
 			}
 		}
 
-		ranges[partition] = to
+		partitions[partition] = to
 	}
 
 	return Range{
-		start:       start,
-		rangeSplits: ranges,
+		start:      start,
+		partitions: partitions,
 	}, nil
 }
 
-// PartitionRange returns the [start, end) range for the requested partition.
+// PartitionRange returns the [start, end] range for the requested partition.
 func (r Range) PartitionRange(partition int) (uuid.UUID, uuid.UUID, error) {
-	if partition < 0 || partition >= len(r.rangeSplits) {
+	if partition < 0 || partition >= len(r.partitions) {
 		return uuid.Nil, uuid.Nil, errors.New("invalid partition index")
 	}
 
 	if partition == 0 {
-		return r.start, r.rangeSplits[0], nil
+		return r.start, r.partitions[0], nil
 	}
 
-	return r.rangeSplits[partition-1], r.rangeSplits[partition], nil
+	return r.partitions[partition-1], r.partitions[partition], nil
 }

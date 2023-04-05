@@ -1,11 +1,11 @@
 .PHONY: help deps test lint lint-check-deps
 
-##	help: Print this help message
+##	help: Print this help message.
 help:
 		@echo 'Usage:'
 		@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' | sed -e 's/^/ /'
 
-##	deps: Check for mod file and if missing, download the golang dep package
+##	deps: Check for a [go.mod] file and if missing, download the golang dep package instead.
 deps:
 		@if [ "$(go mod help | echo 'no-mod')" = "no-mod" ]; then \
 				echo "[dep] fetching package dependencies"; \
