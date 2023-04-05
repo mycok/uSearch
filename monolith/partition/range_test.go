@@ -33,7 +33,7 @@ func (s *RangeTestSuite) TestEvenSplit(c *check.C) {
 	r, err := NewFullRange(4)
 	c.Assert(err, check.IsNil)
 
-	expectedPartitionRanges := [][2]uuid.UUID{
+	expectedRangePartitions := [][2]uuid.UUID{
 		{
 			uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 			uuid.MustParse("40000000-0000-0000-0000-000000000000"),
@@ -52,12 +52,12 @@ func (s *RangeTestSuite) TestEvenSplit(c *check.C) {
 		},
 	}
 
-	for i, partitionRange := range expectedPartitionRanges {
+	for i, partition := range expectedRangePartitions {
 		c.Logf("range: %d", i)
 		from, to, err := r.PartitionRange(i)
 		c.Assert(err, check.IsNil)
-		c.Check(from.String(), check.Equals, partitionRange[0].String())
-		c.Check(to.String(), check.Equals, partitionRange[1].String())
+		c.Check(from.String(), check.Equals, partition[0].String())
+		c.Check(to.String(), check.Equals, partition[1].String())
 	}
 }
 
@@ -65,7 +65,7 @@ func (s *RangeTestSuite) TestOddSplit(c *check.C) {
 	r, err := NewFullRange(3)
 	c.Assert(err, check.IsNil)
 
-	expectedPartitionRanges := [][2]uuid.UUID{
+	expectedRangePartitions := [][2]uuid.UUID{
 		{
 			uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 			uuid.MustParse("55555555-5555-5555-5555-555555555555"),
@@ -80,12 +80,12 @@ func (s *RangeTestSuite) TestOddSplit(c *check.C) {
 		},
 	}
 
-	for i, partitionRange := range expectedPartitionRanges {
+	for i, partition := range expectedRangePartitions {
 		c.Logf("range: %d", i)
 		from, to, err := r.PartitionRange(i)
 		c.Assert(err, check.IsNil)
-		c.Check(from.String(), check.Equals, partitionRange[0].String())
-		c.Check(to.String(), check.Equals, partitionRange[1].String())
+		c.Check(from.String(), check.Equals, partition[0].String())
+		c.Check(to.String(), check.Equals, partition[1].String())
 	}
 }
 
