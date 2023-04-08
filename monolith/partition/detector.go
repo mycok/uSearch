@@ -28,6 +28,8 @@ var (
 // Detector should be implemented by types that assign an application instance in a cluster
 // to a particular data source partition. [ie link data store partitions].
 type Detector interface {
+	// PartitionInfo extracts and returns the current partition number from the current
+	// host_name along with the total number of partitions.
 	PartitionInfo() (int, int, error)
 }
 
@@ -49,7 +51,9 @@ func DetectFromSRVRecords(srvName string) SRVRecord {
 	return SRVRecord{srvName: srvName}
 }
 
-// PartitionInfo implements PartitionDetector.
+// PartitionInfo extracts and returns the current partition number from the current
+// host_name along with the total number of partitions which it attempts to detect
+// by performing a SRV (service) query and counting the number of responses.
 func (det SRVRecord) PartitionInfo() (int, int, error) {
 	// This query will return the hostname of the pod hosting the app / service
 	// with the format [SERVICE_NAME-INDEX]. INDEX represents the position of 
@@ -75,4 +79,17 @@ func (det SRVRecord) PartitionInfo() (int, int, error) {
 	}
 
 	return int(partition), len(addrs), nil
+}
+
+// DummyDetector is a partition detector implementation that always returns
+// the same partition details.
+type DummyDetector struct {
+	Partition int
+	NumOfPartitions int
+}
+
+// PartitionInfo extracts and returns the current partition number from the current
+// host_name along with the total number of partitions.
+func (det DummyDetector) PartitionInfo() (int, int, error) {
+	return det.Partition, det.NumOfPartitions, nil
 }

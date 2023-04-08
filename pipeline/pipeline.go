@@ -115,7 +115,7 @@ func (p *Pipeline) Execute(ctx context.Context, src Source, sink Sink) error {
 	}()
 
 	go func() {
-		sinkWorker(ctx, sink, stageChans[len(stageChans)-1], errChan)
+		sinkWorker(executionCtx, sink, stageChans[len(stageChans)-1], errChan)
 		wg.Done()
 	}()
 

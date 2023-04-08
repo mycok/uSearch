@@ -39,23 +39,23 @@ type Crawler struct {
 }
 
 // New configures and returns pointer to a fully configured crawler type.
-func New(cfg Config) *Crawler {
-	return &Crawler{p: assembleCrawlerPipeline(cfg)}
+func New(config Config) *Crawler {
+	return &Crawler{p: assembleCrawlerPipeline(config)}
 }
 
-func assembleCrawlerPipeline(cfg Config) *pipeline.Pipeline {
+func assembleCrawlerPipeline(config Config) *pipeline.Pipeline {
 	return pipeline.New(
 		pipeline.NewFixedWorkerPool(
-			newLinkFetcher(cfg.URLGetter, cfg.PrivateNetworkDetector),
-			cfg.NumOfFetchWorkers,
+			newLinkFetcher(config.URLGetter, config.PrivateNetworkDetector),
+			config.NumOfFetchWorkers,
 		),
 		pipeline.NewFIFO(
-			newLinkExtractor(cfg.PrivateNetworkDetector),
+			newLinkExtractor(config.PrivateNetworkDetector),
 		),
 		pipeline.NewFIFO(newTextExtractor()),
 		pipeline.NewBroadcastWorkerPool(
-			newGraphUpdater(cfg.Graph),
-			newTextIndexer(cfg.Indexer),
+			newGraphUpdater(config.Graph),
+			newTextIndexer(config.Indexer),
 		),
 	)
 }
