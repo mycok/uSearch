@@ -7,8 +7,10 @@ require (
 	github.com/elastic/go-elasticsearch/v8 v8.5.0
 	github.com/golang/mock v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1
+	github.com/juju/clock v1.0.3
 	github.com/lib/pq v1.10.7
 	github.com/microcosm-cc/bluemonday v1.0.21
+	github.com/sirupsen/logrus v1.9.0
 	google.golang.org/grpc v1.53.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
@@ -33,6 +35,8 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/juju/errors v0.0.0-20220203013757-bd733f3c86b9 // indirect
+	github.com/juju/loggo v0.0.0-20210728185423-eebad3a902c4 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/steveyen/gtreap v0.1.0 // indirect
@@ -48,5 +52,5 @@ require (
 require (
 	github.com/google/uuid v1.3.0
 	github.com/kr/pretty v0.2.1 // indirect
-	github.com/kr/text v0.1.0 // indirect
+	github.com/kr/text v0.2.0 // indirect
 )

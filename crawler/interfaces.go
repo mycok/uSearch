@@ -23,7 +23,7 @@ type PrivateNetworkDetector interface {
 }
 
 // MiniGraph should be implemented by objects that can upsert links and edges
-// into a link graph instance.
+// into a link graph instance. ie [graph updater objects].
 type MiniGraph interface {
 	// UpsertLink creates a new or updates an existing link.
 	UpsertLink(link *graph.Link) error
@@ -37,7 +37,7 @@ type MiniGraph interface {
 }
 
 // MiniIndexer should be implemented by objects that can index documents
-// discovered by the crawler component.
+// discovered by the crawler component. ie [text indexer objects].
 type MiniIndexer interface {
 	// Index adds a new document or updates an existing index entry
 	// in case of an existing document.

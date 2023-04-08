@@ -74,6 +74,7 @@ func (s *LinkGraphServer) UpsertEdge(
 	req.SrcUuid = edge.Src[:]
 	req.DestUuid = edge.Dest[:]
 	req.UpdatedAt = timeToProto(edge.UpdatedAt)
+	
 	return req, nil
 }
 

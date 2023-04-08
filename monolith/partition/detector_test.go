@@ -1,16 +1,16 @@
 package partition
 
 import (
+	"errors"
 	"net"
 	"os"
-	"errors"
 
 	check "gopkg.in/check.v1"
 )
 
 var _ = check.Suite(new(DetectorTestSuite))
 
-type DetectorTestSuite struct {}
+type DetectorTestSuite struct{}
 
 func (s *DetectorTestSuite) SetUpTest(c *check.C) {
 	getHostname = os.Hostname
@@ -56,5 +56,3 @@ func (s *DetectorTestSuite) TestDetectFromSRVRecordsWithNoAvailableData(c *check
 	_, _, err := det.PartitionInfo()
 	c.Assert(errors.Is(err, ErrNoPartitionDataAvailableYet), check.Equals, true)
 }
-
-
