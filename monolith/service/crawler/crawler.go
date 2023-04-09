@@ -77,6 +77,8 @@ func (svc *Service) crawlGraph(
 	ctx context.Context, currPartition, numOfPartitions int,
 ) error {
 
+	svc.config.Logger.Info("started crawler update pass")
+	
 	fullRange, err := partition.NewFullRange(numOfPartitions)
 	if err != nil {
 		return fmt.Errorf("crawler: unable to compute ID ranges for partition: %w", err)
