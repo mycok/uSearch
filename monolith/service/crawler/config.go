@@ -18,22 +18,34 @@ import (
 	"github.com/mycok/uSearch/textindexer/index"
 )
 
-// GraphAPI defines a minimum set of API methods for accessing the link graph.
+// GraphAPI defines a minimum set of API methods for accessing the link graph store.
 type GraphAPI interface {
+	// UpsertLink creates a new or updates an existing link.
 	UpsertLink(link *graph.Link) error
+
+	// UpsertEdge creates a new or updates an existing edge.
 	UpsertEdge(edge *graph.Edge) error
+
+	// RemoveStaleEdges removes any edge that originates from a specific link ID
+	// and was updated before the specified [updatedBefore] time.
 	RemoveStaleEdges(fromID uuid.UUID, updatedBefore time.Time) error
+
+	// Links returns an iterator for a set of links whose id's belong
+	// to the [fromID, toID] range and were retrieved before the [retrievedBefore]
+	// time.
 	Links(fromID, toID uuid.UUID, retrievedBefore time.Time) (graph.LinkIterator, error)
 }
 
 // IndexAPI defines a minimum set of API methods for indexing crawled documents.
 type IndexAPI interface {
+	// Index adds a new document or updates an existing index entry
+	// in case of an existing document.
 	Index(doc *index.Document) error
 }
 
 // Config defines configurations for the web-crawler service.
 type Config struct {
-	// API for communicating with the links and edges data store. 
+	// API for interacting with the links and edges data store. 
 	GraphAPI               GraphAPI
 
 	// API for communicating with the index store.

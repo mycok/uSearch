@@ -33,7 +33,7 @@ type Graph interface {
 
 	// Edges returns an iterator for a set of edges whose source vertex id's
 	// belong to the [fromID, toID] range and were updated before the
-	//  [updatedBefore] time.
+	// [updatedBefore] time.
 	Edges(fromID, toID uuid.UUID, updatedBefore time.Time) (EdgeIterator, error)
 }
 
