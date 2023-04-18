@@ -1,0 +1,47 @@
+{{define "base"}}
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Usearch</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700"/>
+        <link rel="stylesheet" type="text/css" href="/static/css/main.css"/>
+        <link rel="stylesheet" type="text/css" href="/static/css/results.css"/>
+    </head>
+    <body>
+        <section class="page-container">
+            <header class="header-section">
+                <section class="title-form-section">
+                    <section class="title">
+                        <a class="header-link" href="{{.indexEndpoint}}">
+                            <span class="u">U</span><span class="s">s</span><span class="e">e</span><span class="a">a</span><span class="r">r</span><span class="c">c</span><span class="h">h</span>
+                        </a>
+                    </section>
+                    <section>
+                        <form action="{{.searchEndpoint}}">
+                            <section class="search-input-section">
+                                <input class="search-input" type="search" name="q" placeholder="Enter search term..." value="{{.searchTerms}}" />
+                                <button class="search-button" type="submit" />
+                            </section>
+                        </form>
+                    </section>
+                </section>
+                <section class="active-search-section">
+                    <span class="active-search-label">All</span>
+                    <hr class="active-search-hr">
+                    <hr class="header-section-hr">
+                    <span class="total-result-count">
+                        {{if .results}}
+                            [...Showing {{.pagination.From}} - {{.pagination.To}} of {{.pagination.Total}} matched results...]
+                        {{end}}
+                    </span>
+                </section>
+            </header>
+            {{template "main" .}}
+            {{template "pagination" .}}
+            {{template "footer" .}}
+        </section>
+    </body>
+    </html>
+{{end}}
