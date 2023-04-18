@@ -1,0 +1,28 @@
+{{define "base"}}
+    <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Usearch</title>
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700"/>
+            <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+            <link rel="stylesheet" type="text/css" href="/static/css/index.css">
+            <link rel="stylesheet" type="text/css" href="/static/css/submit.css">
+        </head>
+        <body>
+            <section class="header-bar"></section>
+            <main>
+                <section class="main-container">
+		            <header class="main-title">
+                        <a class="header-link" href="{{.indexEndpoint}}">
+				            <span class="u">U</span><span class="s">s</span><span class="e">e</span><span class="a">a</span><span class="r">r</span><span class="c">c</span><span class="h">h</span>
+                        </a>
+		            </header>
+                    {{template "form" .}}
+	            </section>
+            </main>
+            {{template "footer" .}}
+        </body>
+        </html>
+{{end}}

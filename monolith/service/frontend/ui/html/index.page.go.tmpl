@@ -1,0 +1,17 @@
+{{define "form"}}
+    <section class="search-form-container">
+		<form class="search-form" action="{{.searchEndpoint}}">
+			<section class="input-container">
+				<input class="search-input" type="search" name="q" placeholder="Enter search term..." />
+				<button class="search-button" type="submit" />
+			</section>
+			 <section class="upload-button-container">
+				<button class="upload-button" type="button" name="upload-button">
+					<a rel="nofollow" href="{{.submitLinkEndpoint}}">Submit WebLink</a>
+				</button>
+			</section>
+		</form>
+	</section>
+{{end}}
+
+{{template "base" .}}

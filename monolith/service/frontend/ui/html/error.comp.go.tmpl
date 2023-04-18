@@ -1,0 +1,21 @@
+{{define "main"}}
+    <main class="search-results-section">
+      <section class="no-results-msg-section">
+				<span class="no-results-msg">{{.messageContent}}</span>
+		  </section>
+    </main>
+{{end}}
+
+{{define "pagination"}}
+  <section class="pagination-section">
+    {{if .pagination.PrevLink}}
+      <a rel="no-follow" href="{{.pagination.PrevLink}}">Previous</a>
+    {{end}}
+      <span>...</span>
+    {{if .pagination.NextLink}}
+      <a rel="no-follow" href="{{.pagination.NextLink}}">Next</a>
+    {{end}}
+	</section>
+{{end}}
+
+{{template "base" .}}
