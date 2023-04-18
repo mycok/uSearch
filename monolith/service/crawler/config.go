@@ -45,11 +45,11 @@ type IndexAPI interface {
 
 // Config defines configurations for the web-crawler service.
 type Config struct {
-	// API for interacting with the links and edges data store. 
-	GraphAPI               GraphAPI
+	// API for interacting with the links and edges data store.
+	GraphAPI GraphAPI
 
 	// API for communicating with the index store.
-	IndexAPI               IndexAPI
+	IndexAPI IndexAPI
 
 	// An API for detecting private network addresses. If not specified,
 	// a default implementation that handles the private network ranges
@@ -58,27 +58,27 @@ type Config struct {
 
 	// An API for performing HTTP requests. If not specified,
 	// http.DefaultClient will be used instead.
-	URLGetter              crawler.URLGetter
+	URLGetter crawler.URLGetter
 
 	// An API for detecting partition assignments for this service.
-	PartitionDetector      partition.Detector
+	PartitionDetector partition.Detector
 
 	// A clock instance for generating time-related events. If not specified,
 	// the default wall-clock will be used instead.
-	Clock                  clock.Clock
+	Clock clock.Clock
 
 	// The number of concurrent workers used for retrieving links.
-	NumOfFetchWorkers      int
+	NumOfFetchWorkers int
 
 	// The duration between subsequent crawler passes.
-	CrawlUpdateInterval         time.Duration
+	CrawlUpdateInterval time.Duration
 
 	// The minimum amount of time before re-indexing an already-crawled link.
-	ReIndexThreshold       time.Duration
+	ReIndexThreshold time.Duration
 
 	// The logger to use. If not defined an output-discarding logger will
 	// be used instead.
-	Logger                 *logrus.Entry
+	Logger *logrus.Entry
 }
 
 func (config *Config) validate() error {

@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"testing"
 	"fmt"
+	"testing"
 	"time"
 
 	check "gopkg.in/check.v1"
@@ -15,7 +15,7 @@ func Test(t *testing.T) {
 	check.TestingT(t)
 }
 
-type GroupTestSuite struct {}
+type GroupTestSuite struct{}
 
 func (s *GroupTestSuite) TestServiceGroupTerminatesAfterASingleError(c *check.C) {
 	grp := Group{
@@ -56,16 +56,17 @@ func (s *GroupTestSuite) TestServiceGroupTerminatesFromContext(c *check.C) {
 }
 
 type testService struct {
-	id string
+	id  string
 	err error
 }
- func (s testService) Name() string { return s.id }
- func (s testService) Run(ctx context.Context) error {
- 	if s.err != nil {
- 		return s.err
- 	}
 
- 	<-ctx.Done()
+func (s testService) Name() string { return s.id }
+func (s testService) Run(ctx context.Context) error {
+	if s.err != nil {
+		return s.err
+	}
 
- 	return nil
- }
+	<-ctx.Done()
+
+	return nil
+}

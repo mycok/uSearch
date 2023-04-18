@@ -1,2 +1,2 @@
 # uSearch
-webpage crawler and search engine
+A website crawler, indexer and text search engine.

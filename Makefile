@@ -7,7 +7,7 @@ help:
 
 ##	deps: Check for a [go.mod] file and if missing, download the golang dep package instead.
 deps:
-		@if [ "$(go mod help | echo 'no-mod')" = "no-mod" ]; then \
+		@if [ "$(go mod help)" = "no-mod" ]; then \
 				echo "[dep] fetching package dependencies"; \
 				go get -u github.com/golang/dep/cmd/dep; \
 				dep ensure; \

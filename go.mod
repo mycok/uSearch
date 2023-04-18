@@ -5,7 +5,9 @@ go 1.18
 require (
 	github.com/blevesearch/bleve v1.0.14
 	github.com/elastic/go-elasticsearch/v8 v8.5.0
+	github.com/go-chi/chi/v5 v5.0.8
 	github.com/golang/mock v1.6.0
+	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/juju/clock v1.0.3
 	github.com/lib/pq v1.10.7

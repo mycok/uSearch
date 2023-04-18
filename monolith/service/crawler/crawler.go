@@ -39,6 +39,8 @@ func New(config Config) (*Service, error) {
 // Name returns the name of the service.
 func (svc *Service) Name() string { return "crawler" }
 
+// Run executes the service and blocks until the context gets cancelled
+// or an error occurs.
 func (svc *Service) Run(ctx context.Context) error {
 	svc.config.Logger.WithField(
 		"update_interval", svc.config.CrawlUpdateInterval.String(),
@@ -78,7 +80,7 @@ func (svc *Service) crawlGraph(
 ) error {
 
 	svc.config.Logger.Info("started crawler update pass")
-	
+
 	fullRange, err := partition.NewFullRange(numOfPartitions)
 	if err != nil {
 		return fmt.Errorf("crawler: unable to compute ID ranges for partition: %w", err)
