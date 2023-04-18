@@ -1,3 +1,8 @@
+/*
+	service package defines the properties and behavior of a uSearch application service.
+	uSearch application services can be bundled and executed concurrently as a service group.
+*/
+
 package service
 
 import (
@@ -20,7 +25,6 @@ type Service interface {
 
 // Group is a list of Service instances that can execute in parallel.
 type Group []Service
-
 
 // Execute executes all Service instances in the group using the provided context.
 // Calls to Run block until all services have completed executing either because

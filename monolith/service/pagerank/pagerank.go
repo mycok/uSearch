@@ -43,6 +43,8 @@ func New(config Config) (*Service, error) {
 // Name returns the name of the service.
 func (svc *Service) Name() string { return "page-rank" }
 
+// Run executes the service and blocks until the context gets cancelled
+// or an error occurs.
 func (svc *Service) Run(ctx context.Context) error {
 	svc.config.Logger.WithField(
 		"update_interval", svc.config.UpdateInterval.String(),

@@ -28,12 +28,12 @@ func (s *ConfigTestSuite) TestConfigValidation(c *check.C) {
 	defer ctrl.Finish()
 
 	originalConfig := Config{
-		GraphAPI: mocks.NewMockGraphAPI(ctrl),
-		IndexAPI: mocks.NewMockIndexAPI(ctrl),
-		PartitionDetector: partition.DummyDetector{},
-		NumOfFetchWorkers: 4,
+		GraphAPI:            mocks.NewMockGraphAPI(ctrl),
+		IndexAPI:            mocks.NewMockIndexAPI(ctrl),
+		PartitionDetector:   partition.DummyDetector{},
+		NumOfFetchWorkers:   4,
 		CrawlUpdateInterval: time.Minute,
-		ReIndexThreshold: time.Minute,
+		ReIndexThreshold:    time.Minute,
 	}
 
 	config := originalConfig
@@ -68,8 +68,7 @@ func (s *ConfigTestSuite) TestConfigValidation(c *check.C) {
 	c.Assert(config.validate(), check.ErrorMatches, "(?ms).*invalid value for re-index threshold.*")
 }
 
-
-type CrawlerServiceTestSuite struct {}
+type CrawlerServiceTestSuite struct{}
 
 func (s *CrawlerServiceTestSuite) TestFullRun(c *check.C) {
 	ctrl := gomock.NewController(c)
@@ -80,13 +79,13 @@ func (s *CrawlerServiceTestSuite) TestFullRun(c *check.C) {
 	clk := testclock.NewClock(time.Now())
 
 	config := Config{
-		GraphAPI: mockGraph,
-		IndexAPI: mockIndex,
-		PartitionDetector: partition.DummyDetector{Partition: 0, NumOfPartitions: 1},
-		Clock: clk,
-		NumOfFetchWorkers: 1,
+		GraphAPI:            mockGraph,
+		IndexAPI:            mockIndex,
+		PartitionDetector:   partition.DummyDetector{Partition: 0, NumOfPartitions: 1},
+		Clock:               clk,
+		NumOfFetchWorkers:   1,
 		CrawlUpdateInterval: time.Minute,
-		ReIndexThreshold: 12 * time.Hour,
+		ReIndexThreshold:    12 * time.Hour,
 	}
 
 	svc, err := New(config)
@@ -119,9 +118,7 @@ func (s *CrawlerServiceTestSuite) TestFullRun(c *check.C) {
 		cancelFn()
 	}()
 
-
 	// Enter the blocking main loop.
 	err = svc.Run(ctx)
 	c.Assert(err, check.IsNil)
 }
-
