@@ -1,4 +1,4 @@
-.PHONY: deps containerize push containerize-and-push
+.PHONY: containerize push containerize-and-push
 
 SHELL = /bin/bash -o pipefail
 IMAGE = usearch-monolith
@@ -19,19 +19,11 @@ else
 	PREFIX := myckie/
 endif
 
-##	deps: Check for a [go.mod] file and if missing, download the golang dep package instead.
-deps:
-		@if [ "$(go mod help)" = "no-mod" ]; then \
-				echo "[dep] fetching package dependencies"; \
-				go get -u github.com/golang/dep/cmd/dep; \
-				dep ensure; \
-		fi
-
 containerize-and-push: containerize push
 
 containerize:
 	@echo "[docker build].....building ${IMAGE} (tags: ${PREFIX}${IMAGE}:latest, ${PREFIX}${IMAGE}:${SHA})....."
-	@docker build --file ./Dockerfile \
+	@docker build --file ./monolith/Dockerfile \
 		--tag ${PREFIX}${IMAGE}:latest \
 		--tag ${PREFIX}${IMAGE}:${SHA} \
 		. 2>&1 | sed -e "s/^/ | /g"
