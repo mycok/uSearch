@@ -28,7 +28,7 @@ import (
 	memindex "github.com/mycok/uSearch/textindexer/store/memory"
 )
 
-const (
+var (
 	appName = "uSearch-monolith"
 	appSHA  = "compiled-and-deployed-at"
 )
@@ -39,7 +39,7 @@ func main() {
 	rootLogger := logrus.New()
 	logger := rootLogger.WithFields(logrus.Fields{
 		"app":  appName,
-		"SHA":  appSHA,
+		"sha":  appSHA,
 		"host": host,
 	})
 

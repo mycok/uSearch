@@ -97,7 +97,7 @@ func (svc *Service) Run(ctx context.Context) error {
 	}()
 
 	svc.config.Logger.WithField("addr", svc.config.ListenAddr).Info(
-		"started front-end service",
+		"started service",
 	)
 
 	if err = srv.Serve(l); err == http.ErrServerClosed {

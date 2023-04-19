@@ -3,8 +3,7 @@
 ########################################################
 FROM golang:1.20-alpine3.17 AS builder
 
-RUN apk add --no-cache make && \
-apk add --no-cache git && \
+RUN apk add --no-cache git && \
 apk add --no-cache bash
 
 # Pull build dependencies.

@@ -1,3 +1,5 @@
+include monolith/Makefile
+
 .PHONY: help test lint lint-check-deps
 
 ##	help: Print this help message.

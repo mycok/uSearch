@@ -44,7 +44,7 @@ func (svc *Service) Name() string { return "crawler" }
 func (svc *Service) Run(ctx context.Context) error {
 	svc.config.Logger.WithField(
 		"update_interval", svc.config.CrawlUpdateInterval.String(),
-	).Info("starting service")
+	).Info("started service")
 	defer svc.config.Logger.Info("stopped service")
 
 	for {
