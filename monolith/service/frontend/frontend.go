@@ -3,9 +3,11 @@ package frontend
 import (
 	"bytes"
 	"context"
+	"embed"
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"net"
 	"net/http"
 	"net/url"
@@ -19,6 +21,9 @@ import (
 	"github.com/mycok/uSearch/linkgraph/graph"
 	"github.com/mycok/uSearch/textindexer/index"
 )
+
+//go:embed ui/*
+var templateFS embed.FS
 
 const (
 	indexEndpoint      = "/"
@@ -55,8 +60,8 @@ func New(config Config) (*Service, error) {
 	svc.router.Get(submitLinkEndpoint, svc.submitLink)
 	svc.router.Post(submitLinkEndpoint, svc.submitLink)
 
-	fileServer := http.FileServer(http.Dir("./monolith/service/frontend/ui/static/"))
-	svc.router.Handle("/static/*", http.StripPrefix("/static/", fileServer))
+	fileServer := http.FileServer(http.FS(templateFS))
+	svc.router.Handle("/ui/static/*", fileServer)
 
 	svc.router.NotFound(http.HandlerFunc(svc.render404Page))
 
@@ -76,7 +81,7 @@ func (svc *Service) Run(ctx context.Context) error {
 	defer func() { _ = l.Close() }()
 
 	// Compile and cache frontend service templates.
-	if err := svc.newTemplateCache("./monolith/service/frontend/ui/html/"); err != nil {
+	if err := svc.newTemplateCache(); err != nil {
 		return err
 	}
 
@@ -103,13 +108,11 @@ func (svc *Service) Run(ctx context.Context) error {
 	return err
 }
 
-func (svc *Service) newTemplateCache(dir string) error {
+func (svc *Service) newTemplateCache() error {
 	cache := make(map[string]*template.Template)
 
-	// Use the filepath.Glob function to get a slice of all filepaths with
-	// the extension '.page.go.tmpl'. This essentially gives us a slice of all the
-	// 'page' templates for the application.
-	components, err := filepath.Glob(filepath.Join(dir, "*.comp.go.tmpl"))
+	// Get a slice of all file paths matching a '*.comp.go.tmpl' pattern. 
+	components, err := fs.Glob(templateFS, "ui/html/*.comp.go.tmpl")
 	if err != nil {
 		return err
 	}
@@ -120,53 +123,47 @@ func (svc *Service) newTemplateCache(dir string) error {
 		// Extract the file name [ie 'home.page.go.tmpl'] from the full file path
 		// and assign it to the name variable.
 		name = filepath.Base(comp)
-		t, err := template.New(name).ParseFiles(comp)
+		t, err := template.New(name).ParseFS(templateFS, comp)
 		if err != nil {
 			return err
 		}
 
-		// Use the ParseGlob method to add any 'layout' templates to the
-		// template.
-		t, err = t.ParseGlob(filepath.Join(dir, "comp.layout.go.tmpl"))
+		// Parse the newly created template to add any 'layout' templates.
+		t, err = t.ParseFS(templateFS, "ui/html/" + "comp.layout.go.tmpl")
 		if err != nil {
 			return err
 		}
 
-		// Use the ParseGlob method to add any 'partial' templates to the
-		// template.
-		t, err = t.ParseGlob(filepath.Join(dir, "*.partial.go.tmpl"))
+		// Parse the newly created template to add any 'partial' templates.
+		t, err = t.ParseFS(templateFS, "ui/html/" + "footer.partial.go.tmpl")
 		if err != nil {
 			return err
 		}
 
 
-		// Add the template set to the cache, using the name of the page
-		// (like 'home.page.go.tmpl') as the key.
+		// Add the template to the cache, using the file name (like 'home.page.go.tmpl')
+		//  as the key.
 		cache[name] = t
 	}
 
-	pages, err := filepath.Glob(filepath.Join(dir, "*.page.go.tmpl"))
+	pages, err := fs.Glob(templateFS, "ui/html/*.page.go.tmpl")
 	if err != nil {
 		return err
 	}
 
 	for _, page := range pages {
 		name = filepath.Base(page)
-		t, err := template.New(name).ParseFiles(page)
+		t, err := template.New(name).ParseFS(templateFS, page)
 		if err != nil {
 			return err
 		}
 
-		// Use the ParseGlob method to add any 'layout' templates to the
-		// template.
-		t, err = t.ParseGlob(filepath.Join(dir, "page.layout.go.tmpl"))
+		t, err = t.ParseFS(templateFS, "ui/html/" + "page.layout.go.tmpl")
 		if err != nil {
 			return err
 		}
 
-		// Use the ParseGlob method to add any 'partial' templates to the
-		// template.
-		t, err = t.ParseGlob(filepath.Join(dir, "*.partial.go.tmpl"))
+		t, err = t.ParseFS(templateFS, "ui/html/" + "footer.partial.go.tmpl")
 		if err != nil {
 			return err
 		}
