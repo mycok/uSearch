@@ -6,7 +6,6 @@ if [[ $# -ne 2 ]]; then
     exit 1
 fi
 
-DB_NAME=$1
 DB_HOST=$2
 
 # Write and subsequently append SQL migration steps to a /tmp/migrations-all.sql

@@ -1,0 +1,22 @@
+# Overrides for elasticsearch helm chart at:
+# https://github.com/elastic/helm-charts/tree/main/elasticsearch
+
+# Permit co-located instances for solitary minikube virtual machines.
+antiAffinity: "soft"
+# Shrink default JVM heap.
+esJavaOpts: "-Xmx128m -Xms128m"
+# Request and allocate smaller chunks of memory per pod.
+resources:
+  requests:
+    cpu: "100m"
+    memory: "512Mi"
+  limits:
+    cpu: "100m"
+    memory: "512Mi"
+# Request smaller persistent volumes.
+volumeClaimTemplate:
+  accessModes: [ "ReadWriteOnce" ]
+  storageClassName: null
+  resources:
+    requests:
+      storage: 300M

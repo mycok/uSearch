@@ -184,7 +184,7 @@ func configureServices(logger *logrus.Entry) (service.Group, error) {
 	pageRankConfig.GraphAPI = linkGraph
 	pageRankConfig.IndexAPI = textIndex
 	pageRankConfig.PartitionDetector = partDet
-	pageRankConfig.Logger = logger.WithField("service", "page-rank-calculator")
+	pageRankConfig.Logger = logger.WithField("service", "page-rank")
 	if svc, err = pagerank.New(pageRankConfig); err == nil {
 		svcGrp = append(svcGrp, svc)
 	} else {
