@@ -1,0 +1,101 @@
+# An ingress reverse proxy that serves as a usearch app frontend service.
+# it exposes the entire usearch app to the world outside the k8s cluster.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: usearch-ingress
+  namespace: usearch-app
+spec:
+  backend:
+    service:
+      name: usearch-frontend
+      # Listening port.
+      port: 
+        number: 80
+
+---
+
+# A service with a cluster IP that serves as a load-balancer for the frontend
+# pods. It is exposed outside the cluster via the above ingress resource.
+apiVersion: v1
+kind: Service
+metadata:
+  name: usearch-frontend
+  namespace: usearch-app
+spec:
+  selector:
+    # Name of the app / pods that this service serves / load balances.
+    app: usearch-monolith
+  type: ClusterIP
+  ports:
+  # Listening port.
+  - port: 80
+  # Forwarded port.
+    targetPort: 8080
+    name: web
+
+---
+
+# A headless service which allows pods to discover the number of pods in the 
+# stateful set by performing SRV (service) queries.
+# This headless service doesn't receive or forward requests to the registered
+# pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: usearch-headless
+  namespace: usearch-app
+spec:
+  ClusterIP: none
+  selector:
+    app: usearch-monolith
+  ports:
+  # Listening port.
+  - port: 80
+    targetPort: 8080
+    name: web
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: usearch-monolith
+  namespace: usearch-app
+  labels:
+    app: usearch-monolith
+spec:
+  selector:
+    matchLabels:
+      app: usearch-monolith
+  serviceName: usearch-service
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: usearch-monolith
+    spec:
+      containers:
+      - name: usearch-monolith
+        imagePullPolicy: IfNotPresent
+        image: myckie/usearch-monolith:latest
+        args:
+          - "-crawler-num-workers=20"
+          - "-crawler-update-interval=5m"
+          - "-pagerank-num-workers=8"
+          - "-pagerank-update-interval=15m"
+          - "-link-graph-uri=postgresql://cdb-cockroachdb-public.usearch-data:26257/linkgraph?sslmode=disable"
+          - "-text-index-uri=es://elasticsearch-master.usearch-data:9200"
+          - "-partition-detection-mode=dns=usearch-headless"
+        ports:
+        - containerPort: 8080
+          name: frontend
+        resources:
+          limits:
+            cpu: "1m"
+          requests:
+            cpu: "100m"
+
+
+
+

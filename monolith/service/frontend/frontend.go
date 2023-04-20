@@ -46,7 +46,7 @@ type Service struct {
 // New creates and returns a fully configured page-rank service instance.
 func New(config Config) (*Service, error) {
 	if err := config.validate(); err != nil {
-		return nil, fmt.Errorf("front-end service: config validation failed: %w", err)
+		return nil, fmt.Errorf("frontend service: config validation failed: %w", err)
 	}
 
 	svc := &Service{
@@ -69,7 +69,7 @@ func New(config Config) (*Service, error) {
 }
 
 // Name returns the name of the service.
-func (svc *Service) Name() string { return "front-end" }
+func (svc *Service) Name() string { return "frontend" }
 
 // Run executes the service and blocks until the context gets cancelled
 // or an error occurs.

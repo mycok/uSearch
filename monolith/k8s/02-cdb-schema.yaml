@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cdb-ensure-schema
+  namespace: usearch-data
+spec:
+  ttlSecondsAfterFinished: 0
+  template:
+    spec:
+      containers:
+      - name: cdb-schema
+        imagePullPolicy: IfNotPresent
+        image: myckie/cdb-schema:latest
+        args:
+        # Database name
+          - "linkgraph"
+          # Database host value / url. [networrk-service-name].[namespace]
+          - "cdb-cockroachdb-public.usearch-data"
+      restartPolicy: Never
