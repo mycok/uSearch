@@ -1,8 +1,8 @@
 .PHONY: containerize-cdb push-cdb containerize-and-push-cdb
 
 SHELL = /bin/bash -o pipefail
-IMAGE = cdb-schema
-SHA = $(shell git rev-parse --short HEAD)
+CDB_IMAGE = cdb-schema
+CDB_IMAGE_SHA = $(shell git rev-parse --short HEAD)
 
 # Check if the value of the [PRIVATE_CONTAINER_REGISTRY_ADDR] variable is empty
 # or undefined.
@@ -22,14 +22,14 @@ endif
 containerize-and-push-cdb: containerize push
 
 containerize-cdb:
-	@echo "[docker build].....building ${IMAGE} (tags: ${PREFIX}${IMAGE}:latest, ${PREFIX}${IMAGE}:${SHA})....."
-	@docker build --file ./monolith/cdb-schema \
-		--tag ${PREFIX}${IMAGE}:latest \
-		--tag ${PREFIX}${IMAGE}:${SHA} \
+	@echo "[docker build].....building ${CDB_IMAGE} (tags: ${PREFIX}${CDB_IMAGE}:latest, ${PREFIX}${CDB_IMAGE}:${CDB_IMAGE_SHA})....."
+	@docker build --file ./monolith/cdb-schema/Dockerfile \
+		--tag ${PREFIX}${CDB_IMAGE}:latest \
+		--tag ${PREFIX}${CDB_IMAGE_SHA}:${SHA} \
 		. 2>&1 | sed -e "s/^/ | /g"
 
 push-cdb:
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:latest....."
-	@docker push ${PREFIX}${IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:{SHA}....."
-	@docker push ${PREFIX}${IMAGE}:${SHA} 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${CDB_IMAGE}:latest....."
+	@docker push ${PREFIX}${CDB_IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${CDB_IMAGE}:{CDB_IMAGE_SHA}....."
+	@docker push ${PREFIX}${CDB_IMAGE}:${CDB_IMAGE_SHA} 2>&1 | sed -e "s/^/ | /g"

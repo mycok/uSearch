@@ -4,4 +4,12 @@ resources:
   requests:
     cpu: "100m"
     memory: "512Mi"
-storage: "100Mi"
+  limits:
+    cpu: "200m"
+    memory: "512Mi"
+persistentVolume:
+    enabled: true
+    size: "100Mi"
+statefulset:
+  replicas: 1
+single-node: true

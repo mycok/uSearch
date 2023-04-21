@@ -1,17 +1,21 @@
 # Overrides for elasticsearch helm chart at:
 # https://github.com/elastic/helm-charts/tree/main/elasticsearch
 
-# Permit co-located instances for solitary minikube virtual machines.
+# k8s scheduler will schedule statefullset pods using it's best effort policy
+# depending on pod's resource requests.
 antiAffinity: "soft"
 # Shrink default JVM heap.
 esJavaOpts: "-Xmx128m -Xms128m"
+
+replicas: 1
+
 # Request and allocate smaller chunks of memory per pod.
 resources:
   requests:
     cpu: "100m"
     memory: "512Mi"
   limits:
-    cpu: "100m"
+    cpu: "200m"
     memory: "512Mi"
 # Request smaller persistent volumes.
 volumeClaimTemplate:
@@ -19,4 +23,4 @@ volumeClaimTemplate:
   storageClassName: null
   resources:
     requests:
-      storage: 300M
+      storage: "300Mi"
