@@ -15,5 +15,5 @@ spec:
         # Database name
           - "linkgraph"
           # Database host value / url. [networrk-service-name].[namespace]
-          - "cdb-cockroachdb-public.usearch-data"
+          - "cdb-cockroachdb-public.usearch-data:26257"
       restartPolicy: Never

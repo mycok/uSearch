@@ -5,9 +5,10 @@
 #	3. Build and push both the cockroachdb schema and usearch monolith app images.
 #	4. Apply both cockroachdb schema and usearch monolith k8s manifests.
 
-include "/monolith/k8s/Makefile"
+include ./monolith/k8s/Makefile
+include ./monolith/cdb-schema/Makefile
 
-.PHONY: containerize-app push-app containerize-and-push-app containerize-cdb push-cdb containerize-and-push-cdb
+.PHONY: containerize-app push-app containerize-and-push-app
 
 SHELL = /bin/bash -o pipefail
 IMAGE = usearch-monolith
@@ -43,12 +44,4 @@ push-app:
 	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:{SHA}....."
 	@docker push ${PREFIX}${IMAGE}:${SHA} 2>&1 | sed -e "s/^/ | /g"
 
-containerize-cdb:
-	@make -C /monolith/cdb-schema containerize-cdb
-
-push-cdb:
-	@make -C /monolith/cdb-schema push-cdb
-
-containerize-and-push:
-	@make -C /monolith/cdb-schema containerize-and-push-cdb
 
