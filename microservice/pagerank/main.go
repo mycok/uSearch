@@ -24,11 +24,11 @@ import (
 	textindexerapi "github.com/mycok/uSearch/textindexer/store/api/rpc"
 	textindexerproto "github.com/mycok/uSearch/textindexer/store/api/rpc/indexproto"
 	"github.com/mycok/uSearch/monolith/partition"
-	"github.com/mycok/uSearch/monolith/service/crawler"
+	"github.com/mycok/uSearch/monolith/service/pagerank"
 )
 
 var (
-	appName = "usearch-crawler"
+	appName = "usearch-pagerank"
 	appSHA  = "latest-app-git-sha" // Populated by the compiler at the linking stage.
 	logger  *logrus.Entry
 )
@@ -70,19 +70,13 @@ func configureAppEnv() *cli.App {
 			Name:    "num-of-workers",
 			Value:   runtime.NumCPU(),
 			EnvVars: []string{"NUM_OF_WORKERS"},
-			Usage:   "Number of workers to use for crawling web pages",
+			Usage:   "Number of workers to use for calculating page-rank scores",
 		},
 		&cli.DurationFlag{
 			Name:    "update-interval",
 			Value:   5 * time.Minute,
-			EnvVars: []string{"CRAWLER_UPDATE_INTERVAL"},
-			Usage:   "Time between subsequent crawler runs",
-		},
-		&cli.DurationFlag{
-			Name:    "reindex-threshold",
-			Value:   7 * 24 * time.Minute,
-			EnvVars: []string{"REINDEX_THRESHOLD"},
-			Usage:   "The minimum amount of time before re-indexing an already-crawled link",
+			EnvVars: []string{"PAGERANK_UPDATE_INTERVAL"},
+			Usage:   "Time between subsequent page-rank runs",
 		},
 		&cli.StringFlag{
 			Name:    "partition-detection-mode",
@@ -109,7 +103,7 @@ func execute(appCtx *cli.Context) error {
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
 
-	// Configure crawler.
+	// Configure page-rank.
 	partDet, err := getPartitionDetector(appCtx.String("partition-detection-mode"))
 	if err != nil {
 		return err
@@ -122,16 +116,15 @@ func execute(appCtx *cli.Context) error {
 		return err
 	}
 
-	var config crawler.Config
+	var config pagerank.Config
 	config.GraphAPI = graphAPI
 	config.IndexAPI = indexAPI
-	config.NumOfFetchWorkers = appCtx.Int("num-of-workers")
-	config.CrawlUpdateInterval = appCtx.Duration("update-interval")
-	config.ReIndexThreshold = appCtx.Duration("reindex-threshold")
+	config.NumOfComputeWorkers = appCtx.Int("num-of-workers")
+	config.UpdateInterval = appCtx.Duration("update-interval")
 	config.PartitionDetector = partDet
 	config.Logger = logger
 
-	crawlerSvc, err := crawler.New(config)
+	pagerankSvc, err := pagerank.New(config)
 	if err != nil {
 		return err
 	}
@@ -141,8 +134,8 @@ func execute(appCtx *cli.Context) error {
 	go func() {
 		defer wg.Done()
 
-		if err := crawlerSvc.Run(ctx); err != nil {
-			logger.WithField("err", err).Error("crawler service exited with an error")
+		if err := pagerankSvc.Run(ctx); err != nil {
+			logger.WithField("err", err).Error("page-rank service exited with an error")
 
 			cancelFn()
 		}
@@ -176,12 +169,13 @@ func execute(appCtx *cli.Context) error {
 
 			// Closing the pprof listener causes the pprof server to return / exit.
 			_ = pprofListener.Close()
-			
+
 			cancelFn()
 
 		case <-ctx.Done():
 			// Closing the pprof listener causes the pprof server to return / exit.
 			_ = pprofListener.Close()
+
 		}
 	}()
 
