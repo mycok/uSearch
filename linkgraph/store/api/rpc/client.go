@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/mycok/uSearch/linkgraph/graph"
-	"github.com/mycok/uSearch/linkgraph/store/api/rpc/proto"
+	proto "github.com/mycok/uSearch/linkgraph/store/api/rpc/graphproto"
 )
 
 // LinkGraphClient provides an API that wraps the graph.Graph interface

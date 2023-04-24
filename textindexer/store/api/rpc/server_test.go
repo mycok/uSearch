@@ -14,7 +14,7 @@ import (
 
 	"github.com/mycok/uSearch/textindexer/index"
 	"github.com/mycok/uSearch/textindexer/store/api/rpc"
-	"github.com/mycok/uSearch/textindexer/store/api/rpc/proto"
+	proto "github.com/mycok/uSearch/textindexer/store/api/rpc/indexproto"
 	"github.com/mycok/uSearch/textindexer/store/memory"
 )
 

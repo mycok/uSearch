@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/mycok/uSearch/linkgraph/graph"
-	"github.com/mycok/uSearch/linkgraph/store/api/rpc/proto"
+	proto "github.com/mycok/uSearch/linkgraph/store/api/rpc/graphproto"
 )
 
 var _ proto.LinkGraphServer = (*LinkGraphServer)(nil)

@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.19.1
-// source: api.proto
+// source: index.api.proto
 
-package proto
+package indexproto
 
 import (
 	context "context"
@@ -216,5 +216,5 @@ var TextIndexer_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "api.proto",
+	Metadata: "index.api.proto",
 }

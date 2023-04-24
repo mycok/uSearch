@@ -1,17 +1,7 @@
-# Note: Setup, build, push and deploy a usearch monolith application
-# Steps:
-# 	1. Apply k8s deployment namespaces.
-#	2. Add and install helm charts for elasticsearch and cockroachdb data stores.
-#	3. Build and push both the cockroachdb schema and usearch monolith app images.
-#	4. Apply both cockroachdb schema and usearch monolith k8s manifests.
-
-include ./monolith/k8s/Makefile
-include ./monolith/cdb-schema/Makefile
-
-.PHONY: containerize-monolith-app push-monolith-app containerize-and-push-monolith-app
+.PHONY: containerize-crawler-service push-crawler-service containerize-and-push-crawler-service
 
 SHELL = /bin/bash -o pipefail
-IMAGE = usearch-monolith
+IMAGE = usearch-crawler
 SHA = $(shell git rev-parse --short HEAD)
 
 # Check if the value of the [PRIVATE_CONTAINER_REGISTRY_ADDR] variable is empty
@@ -29,16 +19,16 @@ else
 	PREFIX := myckie/
 endif
 
-containerize-and-push-monolith-app: containerize-monolith-app push-monolith-app
+containerize-and-push-crawler-service: containerize-crawler-service push-crawler-service
 
-containerize-monolith-app:
+containerize-crawler-service:
 	@echo "[docker build].....building ${IMAGE} (tags: ${PREFIX}${IMAGE}:latest, ${PREFIX}${IMAGE}:${SHA})....."
-	@docker build --file ./monolith/Dockerfile \
+	@docker build --file ./microservice/crawler/Dockerfile \
 		--tag ${PREFIX}${IMAGE}:latest \
 		--tag ${PREFIX}${IMAGE}:${SHA} \
 		. 2>&1 | sed -e "s/^/ | /g"
 
-push-monolith-app:
+push-crawler-service:
 	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:latest....."
 	@docker push ${PREFIX}${IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
 	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:{SHA}....."

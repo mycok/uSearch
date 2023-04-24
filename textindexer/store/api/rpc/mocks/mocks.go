@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	proto "github.com/mycok/uSearch/textindexer/store/api/rpc/proto"
+	proto "github.com/mycok/uSearch/textindexer/store/api/rpc/indexproto"
 	grpc "google.golang.org/grpc"
 	metadata "google.golang.org/grpc/metadata"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"

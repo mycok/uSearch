@@ -50,15 +50,15 @@ func New(config Config) (*Service, error) {
 	}
 
 	svc := &Service{
-		config: config,
-		router: chi.NewRouter(),
+		config:        config,
+		router:        chi.NewRouter(),
 		templExecutor: executeTemplate,
 	}
 
 	svc.router.Get(indexEndpoint, svc.renderIndexPage)
 	svc.router.Get(searchEndpoint, svc.renderSearchResults)
-	svc.router.Get(submitLinkEndpoint, svc.submitLink)
 	svc.router.Post(submitLinkEndpoint, svc.submitLink)
+	svc.router.Get(submitLinkEndpoint, svc.submitLink)
 
 	fileServer := http.FileServer(http.FS(templateFS))
 	svc.router.Handle("/ui/static/*", fileServer)
@@ -92,7 +92,7 @@ func (svc *Service) Run(ctx context.Context) error {
 
 	go func() {
 		<-ctx.Done()
-	
+
 		_ = srv.Close()
 	}()
 
@@ -111,7 +111,7 @@ func (svc *Service) Run(ctx context.Context) error {
 func (svc *Service) newTemplateCache() error {
 	cache := make(map[string]*template.Template)
 
-	// Get a slice of all file paths matching a '*.comp.go.tmpl' pattern. 
+	// Get a slice of all file paths matching a '*.comp.go.tmpl' pattern.
 	components, err := fs.Glob(templateFS, "ui/html/*.comp.go.tmpl")
 	if err != nil {
 		return err
@@ -129,17 +129,16 @@ func (svc *Service) newTemplateCache() error {
 		}
 
 		// Parse the newly created template to add any 'layout' templates.
-		t, err = t.ParseFS(templateFS, "ui/html/" + "comp.layout.go.tmpl")
+		t, err = t.ParseFS(templateFS, "ui/html/"+"comp.layout.go.tmpl")
 		if err != nil {
 			return err
 		}
 
 		// Parse the newly created template to add any 'partial' templates.
-		t, err = t.ParseFS(templateFS, "ui/html/" + "footer.partial.go.tmpl")
+		t, err = t.ParseFS(templateFS, "ui/html/"+"footer.partial.go.tmpl")
 		if err != nil {
 			return err
 		}
-
 
 		// Add the template to the cache, using the file name (like 'home.page.go.tmpl')
 		//  as the key.
@@ -158,12 +157,12 @@ func (svc *Service) newTemplateCache() error {
 			return err
 		}
 
-		t, err = t.ParseFS(templateFS, "ui/html/" + "page.layout.go.tmpl")
+		t, err = t.ParseFS(templateFS, "ui/html/"+"page.layout.go.tmpl")
 		if err != nil {
 			return err
 		}
 
-		t, err = t.ParseFS(templateFS, "ui/html/" + "footer.partial.go.tmpl")
+		t, err = t.ParseFS(templateFS, "ui/html/"+"footer.partial.go.tmpl")
 		if err != nil {
 			return err
 		}
@@ -193,7 +192,7 @@ func (svc *Service) render404Page(w http.ResponseWriter, _ *http.Request) {
 
 func (svc *Service) renderIndexPage(w http.ResponseWriter, _ *http.Request) {
 	err := svc.templExecutor(svc.config.TemplateCache["index.page.go.tmpl"], w, map[string]interface{}{
-		"indexEndpoint":  indexEndpoint,
+		"indexEndpoint":      indexEndpoint,
 		"searchEndpoint":     searchEndpoint,
 		"submitLinkEndpoint": submitLinkEndpoint,
 	})
@@ -208,7 +207,7 @@ func (svc *Service) submitLink(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		err := svc.templExecutor(svc.config.TemplateCache["submit.page.go.tmpl"], w, map[string]interface{}{
-			"indexEndpoint":          indexEndpoint,
+			"indexEndpoint":      indexEndpoint,
 			"submitLinkEndpoint": submitLinkEndpoint,
 			"messageContent":     msg,
 		})

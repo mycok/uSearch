@@ -14,7 +14,7 @@ import (
 	"github.com/mycok/uSearch/textindexer/index"
 	"github.com/mycok/uSearch/textindexer/store/api/rpc"
 	"github.com/mycok/uSearch/textindexer/store/api/rpc/mocks"
-	"github.com/mycok/uSearch/textindexer/store/api/rpc/proto"
+	proto "github.com/mycok/uSearch/textindexer/store/api/rpc/indexproto"
 )
 
 var _ = check.Suite(new(ClientTestSuite))

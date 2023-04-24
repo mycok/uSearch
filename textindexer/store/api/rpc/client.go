@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/mycok/uSearch/textindexer/index"
-	"github.com/mycok/uSearch/textindexer/store/api/rpc/proto"
+	proto "github.com/mycok/uSearch/textindexer/store/api/rpc/indexproto"
 )
 
 // TextIndexerClient provides an API that wraps the index.Indexer interface
