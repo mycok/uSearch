@@ -46,8 +46,8 @@ type Config struct {
 	// per page will be used instead.
 	NumOfResultsPerPage int
 
-	// The maximum length (in characters) of the highlighted content summary for
-	// matching documents. If not specified, a default value of 256 will be used
+	// The maximum length (in characters) of page content summary for each
+	// matched document. If not specified, a default value of 256 will be used
 	// instead.
 	MaxSummaryLength int
 
