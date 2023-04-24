@@ -30,7 +30,7 @@ import (
 
 var (
 	appName = "uSearch-monolith"
-	appSHA  = "compiled-and-deployed-at"
+	appSHA  = "latest-app-git-sha" // Populated by the compiler at the linking stage.
 )
 
 func main() {
@@ -93,11 +93,11 @@ func configureServices(logger *logrus.Entry) (service.Group, error) {
 	)
 	flag.DurationVar(
 		&crawlerConfig.CrawlUpdateInterval, "crawler-update-interval",
-		5*time.Minute, "Time between subsequent crawler runs",
+		2*time.Minute, "Time between subsequent crawler runs",
 	)
 	flag.DurationVar(
 		&crawlerConfig.ReIndexThreshold, "crawler-re-index-threshold",
-		7*24*time.Hour,
+		2*time.Minute,
 		"Minimum amount of time before re-indexing an already crawled[indexed] link",
 	)
 

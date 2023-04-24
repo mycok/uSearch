@@ -1,12 +1,12 @@
 {{define "form"}}
     <section class="search-form-container">
-		<form class="search-form" action="{{.submitLinkEndpoint}}">
-            {{if .messageContent}}
-                <span class="upload-msg">{{.messageContent}}</span>
-            {{end}}
+		<form class="search-form" action="{{.submitLinkEndpoint}}" method="POST">
             <section class="input-container">
                 <input class="upload-input" type="text" name="link" placeholder="Enter website link or url..." />
             </section>
+            {{if .messageContent}}
+                <span class="upload-msg">{{.messageContent}}</span>
+            {{end}}
             <section class="upload-button-container">
                 <button class="upload-button" type="submit">Submit</button>
             </section>

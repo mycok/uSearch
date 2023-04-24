@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/mycok/uSearch/textindexer/index"
-	"github.com/mycok/uSearch/textindexer/store/api/rpc/proto"
+	proto "github.com/mycok/uSearch/textindexer/store/api/rpc/indexproto"
 )
 
 var _ proto.TextIndexerServer = (*TextIndexerServer)(nil)

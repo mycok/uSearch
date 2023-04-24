@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "/proto";
+option go_package = "/indexproto";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";

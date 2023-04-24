@@ -159,6 +159,8 @@ body {
 .upload-msg {
     font-size: 20px;
     color: #62cb31;
+    text-align: center;
+    padding-top: 2px;
 }
 
 .upload-input {

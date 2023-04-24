@@ -14,7 +14,7 @@ import (
 	"github.com/mycok/uSearch/linkgraph/graph"
 	"github.com/mycok/uSearch/linkgraph/store/api/rpc"
 	"github.com/mycok/uSearch/linkgraph/store/api/rpc/mocks"
-	"github.com/mycok/uSearch/linkgraph/store/api/rpc/proto"
+	proto "github.com/mycok/uSearch/linkgraph/store/api/rpc/graphproto"
 )
 
 var _ = check.Suite(new(ClientTestSuite))

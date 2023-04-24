@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.19.1
-// source: api.proto
+// source: graph.api.proto
 
-package proto
+package graphproto
 
 import (
 	context "context"
@@ -313,5 +313,5 @@ var LinkGraph_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "api.proto",
+	Metadata: "graph.api.proto",
 }
