@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -16,15 +17,15 @@ import (
 	"github.com/urfave/cli/v2"
 	"google.golang.org/grpc"
 
-	"github.com/mycok/uSearch/linkgraph/graph"
-	linkgraphapi "github.com/mycok/uSearch/linkgraph/store/api/rpc"
-	linkgraphproto "github.com/mycok/uSearch/linkgraph/store/api/rpc/graphproto"
-	"github.com/mycok/uSearch/linkgraph/store/cdb"
-	"github.com/mycok/uSearch/linkgraph/store/memory"
+	"github.com/mycok/uSearch/textindexer/index"
+	textindexerapi "github.com/mycok/uSearch/textindexer/store/api/rpc"
+	textindexerproto "github.com/mycok/uSearch/textindexer/store/api/rpc/indexproto"
+	"github.com/mycok/uSearch/textindexer/store/es"
+	"github.com/mycok/uSearch/textindexer/store/memory"
 )
 
 var (
-	appName = "usearch-linkgraph"
+	appName = "usearch-textindexer"
 	appSHA  = "latest-app-git-sha" // Populated by the compiler at the linking stage.
 	logger  *logrus.Entry
 )
@@ -53,16 +54,16 @@ func configureAppEnv() *cli.App {
 	app.Version = appSHA
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
-			Name:    "link-graph-uri",
-			EnvVars: []string{"LINK_GRAPH_URI"},
-			Usage:   "URI for connecting to the link graph data store (supported URI's: in-memory://, postgresql://user@host:26257/linkgraph?sslmode=disable)",
+			Name:    "text-index-uri",
+			EnvVars: []string{"TEXT_INDEX_URI"},
+			Usage:   "URI for connecting to textindexer data store (supported URI's: in-memory://, es://node1:9200,...,nodeN:9200)",
 		},
 
 		&cli.IntFlag{
 			Name:    "grpc-port",
 			Value:   8080,
 			EnvVars: []string{"GRPC_PORT"},
-			Usage:   "Exposed port for link graph gRPC endpoints",
+			Usage:   "Exposed port for text index gRPC endpoints",
 		},
 		&cli.IntFlag{
 			Name:    "pprof-port",
@@ -83,7 +84,7 @@ func execute(appCtx *cli.Context) error {
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
 
-	linkGraph, err := getLinkGraph(ctx, appCtx.String("link-graph-uri"))
+	index, err := getTextIndexer(ctx, appCtx.String("text-index-uri"))
 	if err != nil {
 		return err
 	}
@@ -95,7 +96,7 @@ func execute(appCtx *cli.Context) error {
 	}
 	defer func() { _ = grpcListener.Close() }()
 
-	// Start linkgraph server.
+	// Start textindexer server.
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -103,7 +104,7 @@ func execute(appCtx *cli.Context) error {
 		logger.Logger.WithField("port", appCtx.Int("grpc-port")).Info("listening for gRPC connections")
 
 		srv := grpc.NewServer()
-		linkgraphproto.RegisterLinkGraphServer(srv, linkgraphapi.NewLinkGraphServer(linkGraph))
+		textindexerproto.RegisterTextIndexerServer(srv, textindexerapi.NewTextIndexerServer(index))
 		_ = srv.Serve(grpcListener)
 	}()
 
@@ -154,25 +155,30 @@ func execute(appCtx *cli.Context) error {
 	return nil
 }
 
-func getLinkGraph(_ context.Context, linkGraphURI string) (graph.Graph, error) {
-	if linkGraphURI == "" {
-		return nil, fmt.Errorf("link graph URI must be specified with --link-graph-uri")
+func getTextIndexer(_ context.Context, textIndexerURI string) (index.Indexer, error) {
+	if textIndexerURI == "" {
+		return nil, fmt.Errorf("text indexer URI must be specified with --text-indexer-uri")
 	}
 
-	url, err := url.Parse(linkGraphURI)
+	url, err := url.Parse(textIndexerURI)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse link graph URI: %w", err)
 	}
 
 	switch url.Scheme {
 	case "in-memory":
-		logger.Info("using in-memory graph")
+		logger.Info("using in-memory index")
 
-		return memory.NewInMemoryGraph(), nil
-	case "postgresql":
-		logger.Info("using CDB graph")
+		return memory.NewInMemoryIndex()
+	case "es":
+		nodes := strings.Split(url.Host, ",")
+		for i := 0; i < len(nodes); i++ {
+			nodes[i] = "http://" + nodes[i]
+		}
 
-		return cdb.NewCockroachDBGraph(linkGraphURI)
+		logger.Info("using ES index")
+
+		return es.NewEsIndexer(nodes, false)
 	default:
 		return nil, fmt.Errorf("unsupported link graph URI scheme: %q", url.Scheme)
 	}
