@@ -19,9 +19,9 @@ import (
 
 	linkgraphapi "github.com/mycok/uSearch/linkgraph/store/api/rpc"
 	linkgraphproto "github.com/mycok/uSearch/linkgraph/store/api/rpc/graphproto"
+	"github.com/mycok/uSearch/monolith/service/frontend"
 	textindexerapi "github.com/mycok/uSearch/textindexer/store/api/rpc"
 	textindexerproto "github.com/mycok/uSearch/textindexer/store/api/rpc/indexproto"
-	"github.com/mycok/uSearch/monolith/service/frontend"
 )
 
 var (
@@ -56,12 +56,12 @@ func configureAppEnv() *cli.App {
 		&cli.StringFlag{
 			Name:    "link-graph-api",
 			EnvVars: []string{"LINK_GRAPH_API"},
-			Usage:   "gRPC endpoint for connecting to the link graph store",
+			Usage:   "gRPC endpoint for connecting to the link graph service",
 		},
 		&cli.StringFlag{
 			Name:    "text-indexer-api",
 			EnvVars: []string{"TEXT_INDEXER_API"},
-			Usage:   "gRPC endpoint for connecting to the index store",
+			Usage:   "gRPC endpoint for connecting to the text indexer service ",
 		},
 		&cli.IntFlag{
 			Name:    "frontend-port",
