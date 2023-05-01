@@ -1,0 +1,8 @@
+# Overrides for elasticsearch helm chart at:
+# https://github.com/elastic/helm-charts/tree/main/elasticsearch
+
+# Request and allocate smaller chunks of memory per pod.
+resources:
+  requests:
+    cpu: "300m"
+    memory: "512Mi"

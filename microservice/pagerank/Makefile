@@ -1,8 +1,8 @@
 .PHONY: containerize-pagerank-service push-pagerank-service containerize-and-push-pagerank-service
 
 SHELL = /bin/bash -o pipefail
-IMAGE = usearch-pagerank
-SHA = $(shell git rev-parse --short HEAD)
+PAGERANK_IMAGE = usearch-pagerank
+PAGERANK_SHA = $(shell git rev-parse --short HEAD)
 
 # Check if the value of the [PRIVATE_CONTAINER_REGISTRY_ADDR] variable is empty
 # or undefined.
@@ -22,16 +22,16 @@ endif
 containerize-and-push-pagerank-service: containerize-pagerank-service push-pagerank-service
 
 containerize-pagerank-service:
-	@echo "[docker build].....building ${IMAGE} (tags: ${PREFIX}${IMAGE}:latest, ${PREFIX}${IMAGE}:${SHA})....."
+	@echo "[docker build].....building ${PAGERANK_IMAGE} (tags: ${PREFIX}${PAGERANK_IMAGE}:latest, ${PREFIX}${PAGERANK_IMAGE}:${PAGERANK_SHA})....."
 	@docker build --file ./microservice/pagerank/Dockerfile \
-		--tag ${PREFIX}${IMAGE}:latest \
-		--tag ${PREFIX}${IMAGE}:${SHA} \
+		--tag ${PREFIX}${PAGERANK_IMAGE}:latest \
+		--tag ${PREFIX}${PAGERANK_IMAGE}:${PAGERANK_SHA} \
 		. 2>&1 | sed -e "s/^/ | /g"
 
 push-pagerank-service:
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:latest....."
-	@docker push ${PREFIX}${IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:{SHA}....."
-	@docker push ${PREFIX}${IMAGE}:${SHA} 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${PAGERANK_IMAGE}:latest....."
+	@docker push ${PREFIX}${PAGERANK_IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${PAGERANK_IMAGE}:${PAGERANK_SHA}....."
+	@docker push ${PREFIX}${PAGERANK_IMAGE}:${PAGERANK_SHA} 2>&1 | sed -e "s/^/ | /g"
 
 

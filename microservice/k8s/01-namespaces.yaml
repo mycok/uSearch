@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: usearch-app
+  labels:
+    role: usearch-app-components
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: usearch-data
+  labels:
+    role: usearch-data-stores

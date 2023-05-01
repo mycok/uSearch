@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: usearch-linkgraph-service
+  namespace: usearch-data
+spec:
+  type: ClusterIP
+  selector:
+    app: usearch-linkgraph
+  ports:
+  # Listening address.
+  - port: 8080
+    # Pod / container port to forward traffic to.
+    targetPort: 8080
+    name: grpc-server
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: usearch-linkgraph
+  namespace: usearch-data
+spec:
+  selector:
+    matchLabels:
+      app: usearch-linkgraph
+      namespace: usearch-data
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: usearch-linkgraph
+    spec:
+      containers:
+      - name: usearch-linkgraph
+        imagePullPolicy: Always
+        image: myckie/usearch-linkgraph:latest
+        args:
+          - "-link-graph-uri=postgresql://cdb-cockroachdb-public.usearch-data:26257/linkgraph?sslmode=disable"
+        ports:
+        - containerPort: 8080
+          name: grpc-server
+        - containerPort: 6060
+          name: pprof-server
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+
+

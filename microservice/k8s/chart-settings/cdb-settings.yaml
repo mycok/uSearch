@@ -1,0 +1,7 @@
+# Overrides for cockroachDB helm chart at:
+# https://github.com/cockroachdb/helm-charts/tree/master/cockroachdb
+resources:
+  requests:
+    cpu: "200m"
+    memory: "512Mi"
+
