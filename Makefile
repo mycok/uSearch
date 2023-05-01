@@ -1,4 +1,5 @@
 include monolith/Makefile
+include microservice/Makefile
 
 .PHONY: help test lint lint-check-deps
 

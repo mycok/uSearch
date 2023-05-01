@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: usearch-pagerank
+  namespace: usearch-app
+spec:
+  selector:
+    matchLabels:
+      app: usearch-pagerank
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: usearch-pagerank
+    spec:
+      containers:
+      - name: usearch-pagerank
+        imagePullPolicy: Always
+        image: myckie/usearch-pagerank:latest
+        args:
+          - "-link-graph-api=usearch-linkgraph-service.usearch-data:8080"
+          - "-text-indexer-api=usearch-textindexer-service.usearch-data:8080"
+          - "-partition-detection-mode=single"
+          - "-num-of-workers=8"
+          - "-update-interval=15m"
+        ports:
+        - containerPort: 6060
+          name: pprof-server
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"

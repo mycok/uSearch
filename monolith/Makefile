@@ -11,8 +11,8 @@ include ./monolith/cdb-schema/Makefile
 .PHONY: containerize-monolith-app push-monolith-app containerize-and-push-monolith-app
 
 SHELL = /bin/bash -o pipefail
-IMAGE = usearch-monolith
-SHA = $(shell git rev-parse --short HEAD)
+MONO_IMAGE = usearch-monolith
+MONO_SHA = $(shell git rev-parse --short HEAD)
 
 # Check if the value of the [PRIVATE_CONTAINER_REGISTRY_ADDR] variable is empty
 # or undefined.
@@ -32,16 +32,16 @@ endif
 containerize-and-push-monolith-app: containerize-monolith-app push-monolith-app
 
 containerize-monolith-app:
-	@echo "[docker build].....building ${IMAGE} (tags: ${PREFIX}${IMAGE}:latest, ${PREFIX}${IMAGE}:${SHA})....."
+	@echo "[docker build].....building ${MONO_IMAGE} (tags: ${PREFIX}${MONO_IMAGE}:latest, ${PREFIX}${MONO_IMAGE}:${MONO_SHA})....."
 	@docker build --file ./monolith/Dockerfile \
-		--tag ${PREFIX}${IMAGE}:latest \
-		--tag ${PREFIX}${IMAGE}:${SHA} \
+		--tag ${PREFIX}${MONO_IMAGE}:latest \
+		--tag ${PREFIX}${MONO_IMAGE}:${MONO_SHA} \
 		. 2>&1 | sed -e "s/^/ | /g"
 
 push-monolith-app:
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:latest....."
-	@docker push ${PREFIX}${IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:{SHA}....."
-	@docker push ${PREFIX}${IMAGE}:${SHA} 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${MONO_IMAGE}:latest....."
+	@docker push ${PREFIX}${MONO_IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${MONO_IMAGE}:${MONO_SHA}....."
+	@docker push ${PREFIX}${MONO_IMAGE}:${MONO_SHA} 2>&1 | sed -e "s/^/ | /g"
 
 

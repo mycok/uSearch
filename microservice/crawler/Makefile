@@ -1,8 +1,8 @@
 .PHONY: containerize-crawler-service push-crawler-service containerize-and-push-crawler-service
 
 SHELL = /bin/bash -o pipefail
-IMAGE = usearch-crawler
-SHA = $(shell git rev-parse --short HEAD)
+CRAWLER_IMAGE = usearch-crawler
+CRAWLER_SHA = $(shell git rev-parse --short HEAD)
 
 # Check if the value of the [PRIVATE_CONTAINER_REGISTRY_ADDR] variable is empty
 # or undefined.
@@ -22,16 +22,16 @@ endif
 containerize-and-push-crawler-service: containerize-crawler-service push-crawler-service
 
 containerize-crawler-service:
-	@echo "[docker build].....building ${IMAGE} (tags: ${PREFIX}${IMAGE}:latest, ${PREFIX}${IMAGE}:${SHA})....."
+	@echo "[docker build].....building ${CRAWLER_IMAGE} (tags: ${PREFIX}${CRAWLER_IMAGE}:latest, ${PREFIX}${CRAWLER_IMAGE}:${CRAWLER_SHA})....."
 	@docker build --file ./microservice/crawler/Dockerfile \
-		--tag ${PREFIX}${IMAGE}:latest \
-		--tag ${PREFIX}${IMAGE}:${SHA} \
+		--tag ${PREFIX}${CRAWLER_IMAGE}:latest \
+		--tag ${PREFIX}${CRAWLER_IMAGE}:${CRAWLER_SHA} \
 		. 2>&1 | sed -e "s/^/ | /g"
 
 push-crawler-service:
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:latest....."
-	@docker push ${PREFIX}${IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:{SHA}....."
-	@docker push ${PREFIX}${IMAGE}:${SHA} 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${CRAWLER_IMAGE}:latest....."
+	@docker push ${PREFIX}${CRAWLER_IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${CRAWLER_IMAGE}:${CRAWLER_SHA}....."
+	@docker push ${PREFIX}${CRAWLER_IMAGE}:${CRAWLER_SHA} 2>&1 | sed -e "s/^/ | /g"
 
 

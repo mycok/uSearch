@@ -1,8 +1,8 @@
 .PHONY: containerize-frontend-service push-frontend-service containerize-and-push-frontend-service
 
 SHELL = /bin/bash -o pipefail
-IMAGE = usearch-frontend
-SHA = $(shell git rev-parse --short HEAD)
+FRONTEND_IMAGE = usearch-frontend
+FRONTEND_SHA = $(shell git rev-parse --short HEAD)
 
 # Check if the value of the [PRIVATE_CONTAINER_REGISTRY_ADDR] variable is empty
 # or undefined.
@@ -22,16 +22,16 @@ endif
 containerize-and-push-frontend-service: containerize-frontend-service push-frontend-service
 
 containerize-frontend-service:
-	@echo "[docker build].....building ${IMAGE} (tags: ${PREFIX}${IMAGE}:latest, ${PREFIX}${IMAGE}:${SHA})....."
+	@echo "[docker build].....building ${FRONTEND_IMAGE} (tags: ${PREFIX}${FRONTEND_IMAGE}:latest, ${PREFIX}${FRONTEND_IMAGE}:${FRONTEND_SHA})....."
 	@docker build --file ./microservice/frontend/Dockerfile \
-		--tag ${PREFIX}${IMAGE}:latest \
-		--tag ${PREFIX}${IMAGE}:${SHA} \
+		--tag ${PREFIX}${FRONTEND_IMAGE}:latest \
+		--tag ${PREFIX}${FRONTEND_IMAGE}:${FRONTEND_SHA} \
 		. 2>&1 | sed -e "s/^/ | /g"
 
 push-frontend-service:
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:latest....."
-	@docker push ${PREFIX}${IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:{SHA}....."
-	@docker push ${PREFIX}${IMAGE}:${SHA} 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${FRONTEND_IMAGE}:latest....."
+	@docker push ${PREFIX}${FRONTEND_IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${FRONTEND_IMAGE}:${FRONTEND_SHA}....."
+	@docker push ${PREFIX}${FRONTEND_IMAGE}:${FRONTEND_SHA} 2>&1 | sed -e "s/^/ | /g"
 
 

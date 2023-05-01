@@ -1,5 +1,5 @@
 # An ingress reverse proxy that serves as a usearch app frontend service.
-# it exposes the entire usearch app to the world outside the k8s cluster.
+# it exposes the entire usearch app to the public internet outside the k8s cluster.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -91,10 +91,10 @@ spec:
         - containerPort: 8080
           name: frontend
         resources:
-          limits:
-            cpu: "1m"
           requests:
-            cpu: "100m"
+            cpu: "300m"
+          limits:
+            cpu: "500m"
 
 
 

@@ -1,8 +1,8 @@
 .PHONY: containerize-linkgraph-service push-linkgraph-service containerize-and-push-linkgraph-service
 
 SHELL = /bin/bash -o pipefail
-IMAGE = usearch-linkgraph
-SHA = $(shell git rev-parse --short HEAD)
+LINK_GRAPH_IMAGE = usearch-linkgraph
+LINK_GRAPH_SHA = $(shell git rev-parse --short HEAD)
 
 # Check if the value of the [PRIVATE_CONTAINER_REGISTRY_ADDR] variable is empty
 # or undefined.
@@ -22,14 +22,14 @@ endif
 containerize-and-push-linkgraph-service: containerize-linkgraph-service push-linkgraph-service
 
 containerize-linkgraph-service:
-	@echo "[docker build].....building ${IMAGE} (tags: ${PREFIX}${IMAGE}:latest, ${PREFIX}${IMAGE}:${SHA})....."
+	@echo "[docker build].....building ${LINK_GRAPH_IMAGE} (tags: ${PREFIX}${LINK_GRAPH_IMAGE}:latest, ${PREFIX}${LINK_GRAPH_IMAGE}:${LINK_GRAPH_SHA})....."
 	@docker build --file ./microservice/linkgraph/Dockerfile \
-		--tag ${PREFIX}${IMAGE}:latest \
-		--tag ${PREFIX}${IMAGE}:${SHA} \
+		--tag ${PREFIX}${LINK_GRAPH_IMAGE}:latest \
+		--tag ${PREFIX}${LINK_GRAPH_IMAGE}:${LINK_GRAPH_SHA} \
 		. 2>&1 | sed -e "s/^/ | /g"
 
 push-linkgraph-service:
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:latest....."
-	@docker push ${PREFIX}${IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
-	@echo "[docker push].....pushing ${PREFIX}${IMAGE}:{SHA}....."
-	@docker push ${PREFIX}${IMAGE}:${SHA} 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${LINK_GRAPH_IMAGE}:latest....."
+	@docker push ${PREFIX}${LINK_GRAPH_IMAGE}:latest 2>&1 | sed -e "s/^/ | /g"
+	@echo "[docker push].....pushing ${PREFIX}${LINK_GRAPH_IMAGE}:${LINK_GRAPH_SHA}....."
+	@docker push ${PREFIX}${LINK_GRAPH_IMAGE}:${LINK_GRAPH_SHA} 2>&1 | sed -e "s/^/ | /g"

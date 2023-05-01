@@ -1,0 +1,72 @@
+# An ingress exposes a service to traffic outside the cluster.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: usearch-ingress
+  namespace: usearch-app
+spec:
+  backend:
+    # Service to forward traffic to. [ie load-balancer, clusterIP] service.
+    serviceName: usearch-frontend-service
+    # Service to forward traffic to.
+    servicePort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: usearch-frontend-service
+  namespace: usearch-app
+spec:
+  type: ClusterIP
+  selector:
+    app: usearch-frontend
+  ports:
+  # Listening address.
+  - port: 80
+    # Pod / container port to forward traffic to.
+    targetPort: 8080
+    name: frontend-server
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: usearch-frontend
+  namespace: usearch-app
+  labels:
+    app: usearch-frontend
+spec:
+  selector:
+    matchLabels:
+      app: usearch-frontend
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: usearch-frontend
+    spec:
+      containers:
+      - name: usearch-frontend
+        imagePullPolicy: Always
+        image: myckie/usearch-frontend:latest
+        args:
+          - "-link-graph-api=usearch-linkgraph-service.usearch-data:8080"
+          - "-text-indexer-api=usearch-textindexer-service.usearch-data:8080"
+        ports:
+        - containerPort: 8080
+          name: frontend-server
+        - containerPort: 6060
+          name: pprof-server
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+
+
+      

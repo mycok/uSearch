@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: cdb-schema
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         image: myckie/cdb-schema:latest
         args:
         # Database name

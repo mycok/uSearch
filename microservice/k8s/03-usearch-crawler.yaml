@@ -1,0 +1,58 @@
+# A headless service which allows pods to discover the number of pods in the
+# stateful set by performing SRV (service) queries.
+apiVersion: v1
+kind: Service
+metadata:
+  name: usearch-crawler-headless-service
+  namespace: usearch-app
+spec:
+  clusterIP: None
+  # Include the pprof port to ensure that SRV records are properly generated
+  ports:
+  - port: 6060
+    targetPort: 6060
+    name: pprof-server
+  selector:
+    app: usearch-crawler
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: usearch-crawler
+  namespace: usearch-app
+  labels:
+    app: usearch-crawler
+spec:
+  serviceName: usearch-crawler-headless-service
+  selector:
+    matchLabels:
+      app: usearch-crawler
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: usearch-crawler
+    spec:
+      containers:
+      - name: usearch-crawler
+        imagePullPolicy: Always
+        image: myckie/usearch-crawler:latest
+        args:
+          - "-link-graph-api=usearch-linkgraph-service.usearch-data:8080"
+          - "-text-indexer-api=usearch-textindexer-service.usearch-data:8080"
+          - "-partition-detection-mode=dns=usearch-crawler-headless"
+          - "-num-of-workers=20"
+          - "-update-interval=5m"
+          - "-reindex-threshold=10m"
+        ports:
+        - containerPort: 6060
+          name: pprof-server
+        resources:
+          requests:
+            cpu: "300m"
+          limits:
+            cpu: "1000m"
+
+
