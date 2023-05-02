@@ -10,4 +10,4 @@ kind: Namespace
 metadata:
   name: usearch-data
   labels:
-    role: usearch-data-stores
+    role: usearch-data-apis-and-stores
