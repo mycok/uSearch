@@ -1,5 +1,6 @@
-# A headless service which allows pods to discover the number of pods in the
-# stateful set by performing SRV (service) queries.
+# A headless service will populate the SRV (service) records for the crawler
+# pods and allow partition detection logic to query the total number of
+# available pods.
 apiVersion: v1
 kind: Service
 metadata:
@@ -17,6 +18,8 @@ spec:
 
 ---
 
+# A stateful-set will ensure that each pod is assigned a predictable hostname
+# that includes the pod's position in the set.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:

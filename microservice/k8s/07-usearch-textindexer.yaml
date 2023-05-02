@@ -31,6 +31,7 @@ spec:
     metadata:
       labels:
         app: usearch-textindexer
+        role: data-api
     spec:
       containers:
       - name: usearch-textindexer

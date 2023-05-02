@@ -1,0 +1,38 @@
+# Block all traffic to usearch-data namespace from all other namespaces. 
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-traffic-from-other-ns
+  namespace: usearch-data
+spec:
+  # Destination services / pods. [all pods in the usearch-data namespace] for this case.
+  podSelector:
+    matchLabels:  {}
+  # Source pods / services [all pods in the cluster] for this case.
+  ingress:
+    - from:
+        - podSelector: {}
+
+---
+
+# Whitelist the namespaces to be granted access to selected services in the
+# usearch-data namespace.For this case we grant pods in the usearch-app namespace
+# with [role: usearch-components] access to only link-graph and text-indexer
+# services and none of the other services in usearch-data namespace.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-data-apis
+  namespace: usearch-data
+spec:
+  # Destination services / pods. [only pods in the usearch-data namespace] where
+  # label=role=data-api. [linkgraph and text-indexer api services] for this case.
+  podSelector:
+    matchLabels:
+      role: data-api
+  # Source pods / services [all pods in the namespace where labe=role=usearch-app-components] for this case.
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              role: usearch-app-components
