@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOnsidXNlcm5hbWUiOiJteWNraWUiLCJwYXNzd29yZCI6ImRja3JfcGF0X2VvelBlWkhKd05lcXk1YmJ3YlhQNFRSMzV5ayIsImVtYWlsIjoibXljb3ZhbkBnbWFpbC5jb20iLCJhdXRoIjoiYlhsamEybGxPbVJqYTNKZmNHRjBYMlZ2ZWxCbFdraEtkMDVsY1hrMVltSjNZbGhRTkZSU016VjVhdz09In19fQ==
+kind: Secret
+metadata:
+  creationTimestamp: "2023-05-03T15:45:09Z"
+  name: doc-reg-creds
+  namespace: default
+  resourceVersion: "23785"
+  uid: 4a254847-72d7-4a0a-9427-849c8b0004a8
+type: kubernetes.io/dockerconfigjson
